@@ -219,29 +219,34 @@ tr:hover td{background:rgba(245,166,35,.03);}
 
 
 .user-pill{display:flex;align-items:center;gap:8px;padding:4px 10px;border:1px solid var(--border);background:var(--surface2);border-radius:2px;font-family:'IBM Plex Mono',monospace;font-size:0.68rem;color:var(--label);}
-.login-overlay{position:fixed;inset:0;z-index:1200;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s;overflow:hidden;
-  background:
-    radial-gradient(circle at 18% 20%, rgba(245,166,35,.12), transparent 42%),
-    radial-gradient(circle at 82% 75%, rgba(76,191,176,.10), transparent 45%),
-    linear-gradient(180deg,#101317 0%, #0d1013 55%, #090b0d 100%);
+.login-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:1200;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s;}
+.login-overlay.open{opacity:1;pointer-events:all;}
+
+.login-overlay{overflow:hidden;background:
+  radial-gradient(1200px 500px at 10% 10%, rgba(245,166,35,.08), transparent 60%),
+  radial-gradient(900px 420px at 90% 90%, rgba(245,166,35,.06), transparent 65%),
+  linear-gradient(rgba(0,0,0,.82), rgba(0,0,0,.88));
 }
-.login-overlay::before,
-.login-overlay::after{content:'';position:absolute;inset:0;pointer-events:none;background-repeat:repeat-x;background-position:bottom left;opacity:.13;filter:blur(.2px);}
+.login-overlay::before,.login-overlay::after{content:'';position:absolute;inset:0;pointer-events:none;}
 .login-overlay::before{
-  background-size:460px 150px;
-  background-image:url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 460 150'%3E%3Cg fill='%23ffffff' opacity='0.9'%3E%3Crect x='20' y='76' width='150' height='34' rx='4'/%3E%3Crect x='170' y='84' width='55' height='26' rx='4'/%3E%3Crect x='205' y='60' width='65' height='50' rx='5'/%3E%3Crect x='220' y='66' width='24' height='17'/%3E%3Crect x='247' y='66' width='17' height='17'/%3E%3Crect x='274' y='70' width='95' height='40' rx='4'/%3E%3Crect x='360' y='79' width='38' height='31' rx='3'/%3E%3Ccircle cx='70' cy='114' r='18'/%3E%3Ccircle cx='190' cy='114' r='18'/%3E%3Ccircle cx='300' cy='114' r='18'/%3E%3Ccircle cx='378' cy='114' r='18'/%3E%3C/g%3E%3C/svg%3E");
+  background-image:url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%20320%20120%27%3E%3Cg%20fill%3D%27white%27%3E%3Crect%20x%3D%2718%27%20y%3D%2756%27%20width%3D%27148%27%20height%3D%2730%27%20rx%3D%274%27/%3E%3Cpath%20d%3D%27M166%2056h36l28-20h40v50h-104z%27/%3E%3Crect%20x%3D%27203%27%20y%3D%2730%27%20width%3D%2738%27%20height%3D%2718%27%20rx%3D%272%27/%3E%3Ccircle%20cx%3D%2774%27%20cy%3D%2792%27%20r%3D%2718%27/%3E%3Ccircle%20cx%3D%27150%27%20cy%3D%2792%27%20r%3D%2718%27/%3E%3Ccircle%20cx%3D%27240%27%20cy%3D%2792%27%20r%3D%2718%27/%3E%3Cpath%20d%3D%27M28%2046l110-18%2028%2018H28z%27%20opacity%3D%27.9%27/%3E%3C/g%3E%3C/svg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%20360%20140%27%3E%3Cg%20fill%3D%27white%27%3E%3Cpath%20d%3D%27M18%2076h182v26H18z%27/%3E%3Cpath%20d%3D%27M200%2054h52l30-20h54v68H200z%27/%3E%3Cpath%20d%3D%27M58%2038h108l20%2016H42z%27%20opacity%3D%27.95%27/%3E%3Ccircle%20cx%3D%2772%27%20cy%3D%27104%27%20r%3D%2719%27/%3E%3Ccircle%20cx%3D%27152%27%20cy%3D%27104%27%20r%3D%2719%27/%3E%3Ccircle%20cx%3D%27276%27%20cy%3D%27104%27%20r%3D%2720%27/%3E%3C/g%3E%3C/svg%3E"), url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%20320%20120%27%3E%3Cg%20fill%3D%27white%27%3E%3Crect%20x%3D%2718%27%20y%3D%2756%27%20width%3D%27148%27%20height%3D%2730%27%20rx%3D%274%27/%3E%3Cpath%20d%3D%27M166%2056h36l28-20h40v50h-104z%27/%3E%3Crect%20x%3D%27203%27%20y%3D%2730%27%20width%3D%2738%27%20height%3D%2718%27%20rx%3D%272%27/%3E%3Ccircle%20cx%3D%2774%27%20cy%3D%2792%27%20r%3D%2718%27/%3E%3Ccircle%20cx%3D%27150%27%20cy%3D%2792%27%20r%3D%2718%27/%3E%3Ccircle%20cx%3D%27240%27%20cy%3D%2792%27%20r%3D%2718%27/%3E%3Cpath%20d%3D%27M28%2046l110-18%2028%2018H28z%27%20opacity%3D%27.9%27/%3E%3C/g%3E%3C/svg%3E");
+  background-repeat:no-repeat,no-repeat,no-repeat;
+  background-size:420px auto, 520px auto, 380px auto;
+  background-position:8% 78%, 92% 18%, 70% 88%;
+  opacity:.10;
 }
 .login-overlay::after{
-  inset:auto 0 34% 0;height:130px;opacity:.08;background-position:top left;background-size:380px 120px;
-  transform:scaleX(-1);
-  background-image:url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 380 120'%3E%3Cg fill='%23f5a623'%3E%3Crect x='15' y='60' width='125' height='24' rx='4'/%3E%3Crect x='145' y='64' width='40' height='20' rx='3'/%3E%3Crect x='178' y='48' width='55' height='36' rx='4'/%3E%3Crect x='237' y='56' width='80' height='28' rx='4'/%3E%3Ccircle cx='62' cy='88' r='13'/%3E%3Ccircle cx='166' cy='88' r='13'/%3E%3Ccircle cx='260' cy='88' r='13'/%3E%3Ccircle cx='316' cy='88' r='13'/%3E%3C/g%3E%3C/svg%3E");
+  background:
+    linear-gradient(180deg, rgba(0,0,0,.15), rgba(0,0,0,.35)),
+    repeating-linear-gradient(120deg, rgba(255,255,255,.02) 0 2px, transparent 2px 28px);
+  opacity:.35;
 }
-.login-overlay.open{opacity:1;pointer-events:all;}
-.login-box{position:relative;z-index:2;width:440px;max-width:92vw;background:linear-gradient(180deg,rgba(20,20,20,.93),rgba(13,13,13,.96));border:1px solid rgba(255,255,255,.08);border-top:3px solid var(--accent);border-radius:8px;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.55),0 0 0 1px rgba(245,166,35,.08);backdrop-filter:blur(6px);}
-.login-box::before{content:'';position:absolute;inset:0;background:linear-gradient(120deg,rgba(245,166,35,.06),transparent 35%,transparent 65%,rgba(255,255,255,.03));pointer-events:none;}
-.login-box-hdr{position:relative;padding:1rem 1.25rem;background:linear-gradient(180deg,rgba(28,28,28,.95),rgba(22,22,22,.88));border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;gap:10px;}
+.login-box{position:relative;z-index:1;backdrop-filter: blur(2px);}
+
+.login-box{width:420px;max-width:92vw;background:var(--surface);border:1px solid var(--border);border-top:3px solid var(--accent);border-radius:4px;overflow:hidden;}
+.login-box-hdr{padding:1rem 1.25rem;background:var(--surface2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
 .login-box-hdr h3{font-family:'Bebas Neue',sans-serif;letter-spacing:3px;font-size:1.1rem;color:var(--accent);}
-.login-box-body{position:relative;padding:1.25rem;}
+.login-box-body{padding:1.25rem;}
 .login-progress-wrap{display:none;margin-top:10px;padding:10px;border:1px solid var(--border);background:var(--surface2);border-radius:3px;}
 .login-progress-wrap.show{display:block;}
 .login-progress-bar{height:10px;border:1px solid var(--border);background:var(--surface3);border-radius:999px;overflow:hidden;margin-top:8px;}
@@ -651,65 +656,116 @@ body.app-locked{overflow:hidden;}
 .backup-btn:hover{border-color:var(--accent);color:var(--accent);}
 .backup-btn.danger:hover{border-color:var(--danger);color:var(--danger);}
 
-/* ── RESPONSIVE AUTO-FIT (ALL MONITORS) ── */
+/* ==== AUTO-AJUSTE GLOBAL MONITORES ==== */
 html,body{width:100%;max-width:100%;}
-img,canvas,svg,video{max-width:100%;height:auto;}
-.login-box,.modal{max-width:min(92vw,520px);}
+header{min-height:60px;height:auto;flex-wrap:wrap;row-gap:.35rem;}
+nav{min-width:0;flex-wrap:wrap;}
+.logo{flex-shrink:0;}
+.user-pill{max-width:100%;}
 
-@media (min-width:1600px){
-  .container{max-width:1800px;padding:2rem;}
-  .main-grid{grid-template-columns:420px 1fr;}
+.container{
+  width:100%;
+  max-width:min(1800px, 100vw);
+  padding:clamp(.85rem, 1.6vw, 1.75rem);
 }
 
-@media (max-width:1280px){
-  .qentry-grid{grid-template-columns:repeat(4,minmax(140px,1fr));}
-  .qentry-grid .btn-add-entry{grid-column:1 / -1;width:100%;}
-  .cl-broker-head{grid-template-columns:auto 1fr auto auto;row-gap:.35rem;}
+.card,.settings-section,.pl-card,.pl-table-section,.br-report-card,.broker-body{
+  max-width:100%;
 }
 
-@media (max-width:1024px){
-  header{padding:.65rem 1rem;height:auto;min-height:60px;flex-wrap:wrap;gap:.6rem 1rem;}
-  nav{order:3;width:100%;overflow-x:auto;padding-bottom:2px;}
-  .header-right{margin-left:0;flex-wrap:wrap;justify-content:flex-end;}
-  .section-header{flex-wrap:wrap;align-items:flex-start;}
-  .earnings-hero{flex-wrap:wrap;gap:1rem;padding:1rem 1.1rem;}
-  .hero-divider{display:none;}
-  .cl-summary-grid{grid-template-columns:repeat(2,1fr);}
+.tbl-wrap,.broker-table-wrap,.table-wrap,.table-scroll{
+  width:100%;
+  overflow:auto;
+  -webkit-overflow-scrolling:touch;
 }
 
-@media (max-width:900px){
-  .stats-grid{grid-template-columns:repeat(2,1fr)!important;}
-  .form-row,.form-row-3{grid-template-columns:1fr;}
-  .qentry-grid{grid-template-columns:repeat(2,minmax(130px,1fr));}
-  .qentry-grid .btn-add-entry{grid-column:1 / -1;}
-  .cl-broker-head{grid-template-columns:1fr 1fr;align-items:start;}
-  .cl-col-head,.cl-col-val{text-align:left;}
-  .cl-ticket-row{grid-template-columns:32px 80px 90px 1fr;row-gap:6px;align-items:start;}
-  .cl-ticket-row > :nth-child(n+5){grid-column:1 / -1;}
+input,select,textarea,button{
+  max-width:100%;
 }
 
-@media (max-width:640px){
+.login-overlay{
+  padding:clamp(12px, 3vw, 28px);
+}
+
+.login-box{
+  width:min(460px, 96vw);
+  max-width:96vw;
+}
+
+@media (min-width: 1600px){
+  body{font-size:16px;}
+  .container{max-width:1900px;}
+}
+
+@media (max-width: 1200px){
+  .qentry-grid{
+    grid-template-columns:repeat(2,minmax(180px,1fr));
+  }
+  .settings-body{
+    grid-template-columns:1fr;
+  }
+  .cl-summary-grid{
+    grid-template-columns:repeat(2,1fr);
+  }
+  .pl-hero{
+    grid-template-columns:1fr;
+  }
+}
+
+@media (max-width: 900px){
+  header{
+    padding:.75rem 1rem;
+    align-items:flex-start;
+  }
+  nav{
+    order:3;
+    width:100%;
+    overflow-x:auto;
+    padding-bottom:2px;
+    flex-wrap:nowrap;
+  }
+  .user-pill{
+    margin-left:auto;
+  }
+  .main-grid{
+    grid-template-columns:1fr !important;
+    gap:1rem;
+  }
+  .form-row,.form-row-3,.three{
+    grid-template-columns:1fr !important;
+  }
+  .qentry-grid{
+    grid-template-columns:1fr;
+    gap:8px;
+  }
+  .cl-broker-head{
+    grid-template-columns:1fr;
+    gap:8px;
+  }
+  .ai-row{
+    grid-template-columns:1fr;
+  }
+  .cl-ticket-row,.cl-col-headers{
+    min-width:860px;
+  }
+}
+
+@media (max-width: 640px){
   .container{padding:.75rem;}
-  .stats-grid{grid-template-columns:1fr!important;}
-  .week-nav{gap:8px;padding:8px 10px;}
-  .week-nav h2{font-size:1.05rem;letter-spacing:2px;}
-  .table-toolbar{padding:.65rem .75rem;}
-  .search-input{width:100%;}
-  .ml-auto{margin-left:0;width:100%;}
-  .toast{right:10px;left:10px;max-width:none;bottom:10px;}
-  .login-box{max-width:96vw;width:min(96vw,440px);} .login-overlay::before{background-size:320px 110px;} .login-overlay::after{background-size:280px 95px;height:95px;}
-  .login-box-body{padding:1rem;}
-  .qentry-grid{grid-template-columns:1fr;}
-  .btn-add-entry{width:100%;}
-  .cl-summary-grid{grid-template-columns:1fr;}
+  .stats-grid{
+    grid-template-columns:1fr !important;
+  }
+  .cl-summary-grid{
+    grid-template-columns:1fr;
+  }
+  .login-box-hdr{
+    padding:.8rem 1rem;
+  }
+  .login-box-body{
+    padding:1rem;
+  }
 }
 
-@media (max-width:420px){
-  .logo{font-size:1.45rem;letter-spacing:2px;}
-  .nav-btn{padding:7px 10px;font-size:.66rem;}
-  .section-title h1{font-size:1.45rem;letter-spacing:2px;}
-  .stat-value{font-size:1.55rem;}
-}
 </style>
 </head>
 <body>
@@ -2247,7 +2303,8 @@ function confirmDelete() {
   if (col === 'expenses') saveExpenses();
   else save(col);
   closeModal();
-  renderAll();
+  seedDefaultUser();
+renderAll();
   toast('🗑 Registro eliminado');
 }
 
@@ -4549,6 +4606,21 @@ function runLoginProgress(rec){
   },120);
 }
 function persistUsers(){ localStorage.setItem('dt_users', JSON.stringify(DB.users)); }
+function seedDefaultUser(){
+  try{
+    const hasUsers = Array.isArray(DB.users) && DB.users.length > 0;
+    if(hasUsers) return;
+    DB.users = [{
+      id: uid(),
+      username: 'admin',
+      role: 'admin',
+      pass: hashPass('1234'),
+      createdAt: new Date().toISOString()
+    }];
+    persistUsers();
+  }catch(e){ console.error('seedDefaultUser error', e); }
+}
+
 function hashPass(v){ return btoa(unescape(encodeURIComponent(v||''))); }
 function updateUserPill(){
   const pill=document.getElementById('userPill');
@@ -4908,6 +4980,76 @@ if (currentUser) {
   setAppLocked(true);
   setTimeout(openLoginModal, 150);
 }
+
+/* ── FULLSCREEN STARTUP (auto on first interaction/login, ESC exits native fullscreen) ── */
+(function(){
+  function requestAppFullscreen(){
+    const el = document.documentElement;
+    if (!el || document.fullscreenElement) return;
+    const fn = el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen;
+    if (fn) {
+      try { fn.call(el); } catch(e) {}
+    }
+  }
+  function exitAppFullscreen(){
+    const fn = document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen;
+    if (document.fullscreenElement && fn) {
+      try { fn.call(document); } catch(e) {}
+    }
+  }
+
+  // Intenta entrar en pantalla completa en la primera interacción (requisito del navegador)
+  document.addEventListener('click', function firstFS(){
+    requestAppFullscreen();
+  }, { once:true, capture:true });
+
+  // Si el login llama runLoginProgress desde el botón Entrar, también intenta fullscreen ahí
+  if (typeof runLoginProgress === 'function') {
+    const _runLoginProgress = runLoginProgress;
+    runLoginProgress = function(rec){
+      requestAppFullscreen();
+      return _runLoginProgress.apply(this, arguments);
+    };
+  }
+
+  // Al cerrar sesión, opcionalmente salimos de fullscreen
+  if (typeof logoutUser === 'function') {
+    const _logoutUser = logoutUser;
+    logoutUser = function(){
+      exitAppFullscreen();
+      return _logoutUser.apply(this, arguments);
+    };
+  }
+
+  // Atajo F11 interno (además del F11 del navegador). ESC ya funciona nativo para salir.
+  document.addEventListener('keydown', function(ev){
+    if (ev.key === 'F11') {
+      ev.preventDefault();
+      if (document.fullscreenElement) exitAppFullscreen();
+      else requestAppFullscreen();
+    }
+  });
+
+  // Botón pequeño para activar fullscreen si el navegador bloqueó el auto
+  function ensureFsButton(){
+    if (document.getElementById('fsQuickBtn')) return;
+    const btn = document.createElement('button');
+    btn.id = 'fsQuickBtn';
+    btn.type = 'button';
+    btn.textContent = '⛶ Pantalla completa';
+    btn.style.cssText = 'position:fixed;right:12px;bottom:12px;z-index:9999;background:#1c1c1c;color:#f5f5f5;border:1px solid #444;border-radius:8px;padding:8px 10px;font:600 12px/1 system-ui;cursor:pointer;opacity:.92';
+    btn.addEventListener('click', function(){
+      if (document.fullscreenElement) exitAppFullscreen(); else requestAppFullscreen();
+    });
+    document.body.appendChild(btn);
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', ensureFsButton, {once:true});
+  } else {
+    ensureFsButton();
+  }
+})();
+
 </script>
 <!-- BUILD: login-startup-progress -->
 </body>
