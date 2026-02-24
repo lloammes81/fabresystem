@@ -219,12 +219,36 @@ tr:hover td{background:rgba(245,166,35,.03);}
 
 
 .user-pill{display:flex;align-items:center;gap:8px;padding:4px 10px;border:1px solid var(--border);background:var(--surface2);border-radius:2px;font-family:'IBM Plex Mono',monospace;font-size:0.68rem;color:var(--label);}
-.login-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:1200;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s;}
+.login-overlay{position:fixed;inset:0;z-index:1200;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s;overflow:hidden;
+  background:
+    radial-gradient(circle at 18% 20%, rgba(245,166,35,.12), transparent 42%),
+    radial-gradient(circle at 82% 75%, rgba(76,191,176,.10), transparent 45%),
+    linear-gradient(180deg,#101317 0%, #0d1013 55%, #090b0d 100%);
+}
+.login-overlay::before,
+.login-overlay::after{content:'';position:absolute;inset:0;pointer-events:none;background-repeat:repeat-x;background-position:bottom left;opacity:.13;filter:blur(.2px);}
+.login-overlay::before{
+  background-size:460px 150px;
+  background-image:url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 460 150'%3E%3Cg fill='%23ffffff' opacity='0.9'%3E%3Crect x='20' y='76' width='150' height='34' rx='4'/%3E%3Crect x='170' y='84' width='55' height='26' rx='4'/%3E%3Crect x='205' y='60' width='65' height='50' rx='5'/%3E%3Crect x='220' y='66' width='24' height='17'/%3E%3Crect x='247' y='66' width='17' height='17'/%3E%3Crect x='274' y='70' width='95' height='40' rx='4'/%3E%3Crect x='360' y='79' width='38' height='31' rx='3'/%3E%3Ccircle cx='70' cy='114' r='18'/%3E%3Ccircle cx='190' cy='114' r='18'/%3E%3Ccircle cx='300' cy='114' r='18'/%3E%3Ccircle cx='378' cy='114' r='18'/%3E%3C/g%3E%3C/svg%3E");
+}
+.login-overlay::after{
+  inset:auto 0 34% 0;height:130px;opacity:.08;background-position:top left;background-size:380px 120px;
+  transform:scaleX(-1);
+  background-image:url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 380 120'%3E%3Cg fill='%23f5a623'%3E%3Crect x='15' y='60' width='125' height='24' rx='4'/%3E%3Crect x='145' y='64' width='40' height='20' rx='3'/%3E%3Crect x='178' y='48' width='55' height='36' rx='4'/%3E%3Crect x='237' y='56' width='80' height='28' rx='4'/%3E%3Ccircle cx='62' cy='88' r='13'/%3E%3Ccircle cx='166' cy='88' r='13'/%3E%3Ccircle cx='260' cy='88' r='13'/%3E%3Ccircle cx='316' cy='88' r='13'/%3E%3C/g%3E%3C/svg%3E");
+}
 .login-overlay.open{opacity:1;pointer-events:all;}
-.login-box{width:420px;max-width:92vw;background:var(--surface);border:1px solid var(--border);border-top:3px solid var(--accent);border-radius:4px;overflow:hidden;}
-.login-box-hdr{padding:1rem 1.25rem;background:var(--surface2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.login-box{position:relative;z-index:2;width:440px;max-width:92vw;background:linear-gradient(180deg,rgba(20,20,20,.93),rgba(13,13,13,.96));border:1px solid rgba(255,255,255,.08);border-top:3px solid var(--accent);border-radius:8px;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.55),0 0 0 1px rgba(245,166,35,.08);backdrop-filter:blur(6px);}
+.login-box::before{content:'';position:absolute;inset:0;background:linear-gradient(120deg,rgba(245,166,35,.06),transparent 35%,transparent 65%,rgba(255,255,255,.03));pointer-events:none;}
+.login-box-hdr{position:relative;padding:1rem 1.25rem;background:linear-gradient(180deg,rgba(28,28,28,.95),rgba(22,22,22,.88));border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;gap:10px;}
 .login-box-hdr h3{font-family:'Bebas Neue',sans-serif;letter-spacing:3px;font-size:1.1rem;color:var(--accent);}
-.login-box-body{padding:1.25rem;}
+.login-box-body{position:relative;padding:1.25rem;}
+.login-progress-wrap{display:none;margin-top:10px;padding:10px;border:1px solid var(--border);background:var(--surface2);border-radius:3px;}
+.login-progress-wrap.show{display:block;}
+.login-progress-bar{height:10px;border:1px solid var(--border);background:var(--surface3);border-radius:999px;overflow:hidden;margin-top:8px;}
+.login-progress-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--accent),var(--success));transition:width .18s ease;}
+.login-progress-meta{display:flex;justify-content:space-between;align-items:center;font-family:'IBM Plex Mono',monospace;font-size:0.68rem;color:var(--label);}
+body.app-locked header, body.app-locked .page{visibility:hidden;pointer-events:none;}
+body.app-locked{overflow:hidden;}
 @media(max-width:1100px){.main-grid{grid-template-columns:1fr;}.stats-grid{grid-template-columns:repeat(2,1fr);}}
 @media(max-width:640px){.stats-grid{grid-template-columns:repeat(2,1fr);}.container{padding:1rem;}.week-nav{flex-wrap:wrap;}}
 @media print{header,.form-card,.week-nav,.stats-grid,.table-toolbar .btn,.table-toolbar .search-input,.actions{display:none!important;}body{background:white;color:black;}td,th{color:black;border-color:#ccc;}}
@@ -626,6 +650,66 @@ tr:hover td{background:rgba(245,166,35,.03);}
 .backup-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border:1px solid var(--border);background:var(--surface2);color:var(--label);border-radius:2px;font-family:'IBM Plex Mono',monospace;font-size:0.72rem;cursor:pointer;transition:all .15s;margin-right:8px;margin-bottom:8px;}
 .backup-btn:hover{border-color:var(--accent);color:var(--accent);}
 .backup-btn.danger:hover{border-color:var(--danger);color:var(--danger);}
+
+/* ── RESPONSIVE AUTO-FIT (ALL MONITORS) ── */
+html,body{width:100%;max-width:100%;}
+img,canvas,svg,video{max-width:100%;height:auto;}
+.login-box,.modal{max-width:min(92vw,520px);}
+
+@media (min-width:1600px){
+  .container{max-width:1800px;padding:2rem;}
+  .main-grid{grid-template-columns:420px 1fr;}
+}
+
+@media (max-width:1280px){
+  .qentry-grid{grid-template-columns:repeat(4,minmax(140px,1fr));}
+  .qentry-grid .btn-add-entry{grid-column:1 / -1;width:100%;}
+  .cl-broker-head{grid-template-columns:auto 1fr auto auto;row-gap:.35rem;}
+}
+
+@media (max-width:1024px){
+  header{padding:.65rem 1rem;height:auto;min-height:60px;flex-wrap:wrap;gap:.6rem 1rem;}
+  nav{order:3;width:100%;overflow-x:auto;padding-bottom:2px;}
+  .header-right{margin-left:0;flex-wrap:wrap;justify-content:flex-end;}
+  .section-header{flex-wrap:wrap;align-items:flex-start;}
+  .earnings-hero{flex-wrap:wrap;gap:1rem;padding:1rem 1.1rem;}
+  .hero-divider{display:none;}
+  .cl-summary-grid{grid-template-columns:repeat(2,1fr);}
+}
+
+@media (max-width:900px){
+  .stats-grid{grid-template-columns:repeat(2,1fr)!important;}
+  .form-row,.form-row-3{grid-template-columns:1fr;}
+  .qentry-grid{grid-template-columns:repeat(2,minmax(130px,1fr));}
+  .qentry-grid .btn-add-entry{grid-column:1 / -1;}
+  .cl-broker-head{grid-template-columns:1fr 1fr;align-items:start;}
+  .cl-col-head,.cl-col-val{text-align:left;}
+  .cl-ticket-row{grid-template-columns:32px 80px 90px 1fr;row-gap:6px;align-items:start;}
+  .cl-ticket-row > :nth-child(n+5){grid-column:1 / -1;}
+}
+
+@media (max-width:640px){
+  .container{padding:.75rem;}
+  .stats-grid{grid-template-columns:1fr!important;}
+  .week-nav{gap:8px;padding:8px 10px;}
+  .week-nav h2{font-size:1.05rem;letter-spacing:2px;}
+  .table-toolbar{padding:.65rem .75rem;}
+  .search-input{width:100%;}
+  .ml-auto{margin-left:0;width:100%;}
+  .toast{right:10px;left:10px;max-width:none;bottom:10px;}
+  .login-box{max-width:96vw;width:min(96vw,440px);} .login-overlay::before{background-size:320px 110px;} .login-overlay::after{background-size:280px 95px;height:95px;}
+  .login-box-body{padding:1rem;}
+  .qentry-grid{grid-template-columns:1fr;}
+  .btn-add-entry{width:100%;}
+  .cl-summary-grid{grid-template-columns:1fr;}
+}
+
+@media (max-width:420px){
+  .logo{font-size:1.45rem;letter-spacing:2px;}
+  .nav-btn{padding:7px 10px;font-size:.66rem;}
+  .section-title h1{font-size:1.45rem;letter-spacing:2px;}
+  .stat-value{font-size:1.55rem;}
+}
 </style>
 </head>
 <body>
@@ -666,24 +750,18 @@ tr:hover td{background:rgba(245,166,35,.03);}
         </a>
       </div>
     </div>
-
-    <div class="dropdown" id="dd_settings">
-      <button class="nav-btn" id="settingsNavBtn" onclick="toggleDropdown('dd_settings')">⚙ Settings <span class="dropdown-arrow">▾</span></button>
-      <div class="dropdown-menu">
-        <a onclick="showPage('settings',this)">
-          <span class="menu-icon">⚙️</span> Configuración
-        </a>
-        <a onclick="openSettingsUsers()">
-          <span class="menu-icon">👥</span> Registro de Usuarios
-        </a>
-      </div>
-    </div>
   </nav>
   <div class="header-right">
     <div class="week-badge" id="headerWeekBadge">SEMANA ACTUAL</div>
     <div class="user-pill" id="userPill">👤 Invitado</div>
     <button class="nav-btn" onclick="openLoginModal()" id="loginNavBtn" style="border-color:var(--border);opacity:.85">🔐 Login</button>
-    
+    <div class="dropdown" id="dd_settings">
+      <button class="nav-btn" id="settingsNavBtn" onclick="toggleDropdown('dd_settings')" style="border-color:var(--border);opacity:.85">⚙ Settings <span class="dropdown-arrow">▾</span></button>
+      <div class="dropdown-menu">
+        <a onclick="showPage('settings',this)"><span class="menu-icon">⚙️</span> Configuración</a>
+        <a onclick="showPage('settings',this);setTimeout(()=>document.getElementById('usersSettingsSection')?.scrollIntoView({behavior:'smooth',block:'start'}),120)"><span class="menu-icon">👥</span> Registro de Usuarios</a>
+      </div>
+    </div>
   </div>
 </header>
 
@@ -2000,6 +2078,46 @@ tr:hover td{background:rgba(245,166,35,.03);}
 <!-- ── TOAST ── -->
 <div class="toast" id="toast"></div>
 
+<!-- ── LOGIN MODAL ── -->
+<div class="login-overlay" id="loginOverlay" onclick="if(event.target===this) closeLoginModal()">
+  <div class="login-box">
+    <div class="login-box-hdr">
+      <span style="font-size:1.1rem">🔐</span>
+      <h3>INICIAR SESIÓN</h3>
+      <button class="btn-icon" onclick="closeLoginModal()" style="margin-left:auto;padding:5px 9px">✕</button>
+    </div>
+    <div class="login-box-body">
+      <div class="form-group">
+        <label>Usuario</label>
+        <input type="text" id="lg_user" placeholder="admin" autocomplete="username" onkeydown="if(event.key==='Enter') doLogin()">
+      </div>
+      <div class="form-group">
+        <label>Contraseña</label>
+        <input type="password" id="lg_pass" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter') doLogin()">
+      </div>
+      <div id="lg_msg" style="min-height:18px;font-size:0.72rem;font-family:'IBM Plex Mono',monospace;color:var(--muted);margin:2px 0 8px">
+        Usa un usuario creado en <span class="accent">Settings → Registro de Usuarios</span>
+      </div>
+      <div class="login-progress-wrap" id="lg_loaderWrap">
+        <div class="login-progress-meta">
+          <span id="lg_loaderText">Cargando perfil...</span>
+          <span id="lg_loaderPct">0%</span>
+        </div>
+        <div class="login-progress-bar"><div class="login-progress-fill" id="lg_loaderFill"></div></div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn-cancel-modal" style="flex:1" onclick="closeLoginModal()">Cancelar</button>
+        <button class="btn btn-primary" style="flex:1;margin-top:0" onclick="doLogin()">Entrar</button>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button class="btn btn-outline btn-sm" style="flex:1" onclick="logoutUser()">Cerrar sesión</button>
+        <button class="btn btn-outline btn-sm" style="flex:1" onclick="showPage('settings');closeLoginModal();setTimeout(()=>document.getElementById('usersSettingsSection')?.scrollIntoView({behavior:'smooth',block:'start'}),120)">Ir a usuarios</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
 <!-- ── DELETE MODAL ── -->
 <div class="modal-overlay" id="deleteModal">
   <div class="modal">
@@ -2032,6 +2150,9 @@ function uid() { return Date.now().toString(36) + Math.random().toString(36).sub
 //  NAVIGATION
 // ════════════════════════════════════════════════
 let currentPage = 'tickets';
+function closeAllDropdowns(){
+  document.querySelectorAll('.dropdown.open').forEach(d => d.classList.remove('open'));
+}
 function showPage(page, el) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
@@ -2069,13 +2190,6 @@ function showPage(page, el) {
   }
   updateMenuBadges();
   updateUserPill();
-}
-function openSettingsUsers(){
-  showPage('settings');
-  setTimeout(()=>{
-    const sec=document.getElementById('usersSettingsSection');
-    if(sec) sec.scrollIntoView({behavior:'smooth', block:'start'});
-  }, 50);
 }
 
 // ════════════════════════════════════════════════
@@ -4352,9 +4466,9 @@ function loadSavedAPIKey() {
 // ════════════════════════════════════════════════
 function toggleDropdown(id) {
   const dd = document.getElementById(id);
+  if (!dd) return;
   const isOpen = dd.classList.contains('open');
-  // Close all dropdowns first
-  document.querySelectorAll('.dropdown.open').forEach(d => d.classList.remove('open'));
+  closeAllDropdowns();
   if (!isOpen) dd.classList.add('open');
 }
 // Close dropdowns when clicking outside
@@ -4363,11 +4477,77 @@ document.addEventListener('click', e => {
     document.querySelectorAll('.dropdown.open').forEach(d => d.classList.remove('open'));
   }
 });
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    try { closeLoginModal(); } catch(_) {}
+    try { closeModal(); } catch(_) {}
+    document.querySelectorAll('.dropdown.open').forEach(d => d.classList.remove('open'));
+  }
+});
 
 // ════════════════════════════════════════════════
 //  USERS / LOGIN MODULE
 // ════════════════════════════════════════════════
 let currentUser = JSON.parse(localStorage.getItem('dt_session_user') || 'null');
+let loginProgressTimer = null;
+function setAppLocked(locked){
+  document.body.classList.toggle('app-locked', !!locked);
+}
+function resetLoginProgress(){
+  const wrap=document.getElementById('lg_loaderWrap');
+  const fill=document.getElementById('lg_loaderFill');
+  const pct=document.getElementById('lg_loaderPct');
+  const txt=document.getElementById('lg_loaderText');
+  if(wrap) wrap.classList.remove('show');
+  if(fill) fill.style.width='0%';
+  if(pct) pct.textContent='0%';
+  if(txt) txt.textContent='Cargando perfil...';
+  if(loginProgressTimer){ clearInterval(loginProgressTimer); loginProgressTimer=null; }
+  ['lg_user','lg_pass'].forEach(id=>{ const el=document.getElementById(id); if(el) el.disabled=false; });
+}
+function runLoginProgress(rec){
+  const wrap=document.getElementById('lg_loaderWrap');
+  const fill=document.getElementById('lg_loaderFill');
+  const pct=document.getElementById('lg_loaderPct');
+  const txt=document.getElementById('lg_loaderText');
+  const msg=document.getElementById('lg_msg');
+  const enterBtn=[...document.querySelectorAll('#loginOverlay button')].find(b=>b.textContent.trim()==='Entrar');
+  if(msg) msg.innerHTML='<span style="color:var(--info)">Validando usuario…</span>';
+  if(wrap) wrap.classList.add('show');
+  ['lg_user','lg_pass'].forEach(id=>{ const el=document.getElementById(id); if(el) el.disabled=true; });
+  if(enterBtn) enterBtn.disabled=true;
+  let v=0;
+  const steps=[
+    [18,'Validando credenciales...'],
+    [45,'Cargando datos del usuario...'],
+    [72,'Preparando menú principal...'],
+    [100,'Listo, entrando...']
+  ];
+  let idx=0;
+  loginProgressTimer=setInterval(()=>{
+    const target=steps[Math.min(idx,steps.length-1)][0];
+    const label=steps[Math.min(idx,steps.length-1)][1];
+    if(txt) txt.textContent=label;
+    v=Math.min(v+4,target);
+    if(fill) fill.style.width=v+'%';
+    if(pct) pct.textContent=v+'%';
+    if(v>=target){ idx++; }
+    if(v>=100){
+      clearInterval(loginProgressTimer); loginProgressTimer=null;
+      currentUser={id:rec.id, username:rec.username, role:rec.role};
+      localStorage.setItem('dt_session_user', JSON.stringify(currentUser));
+      if(msg) msg.innerHTML='<span style="color:var(--success)">✓ Sesión iniciada</span>';
+      updateUserPill();
+      setTimeout(()=>{
+        resetLoginProgress();
+        if(enterBtn) enterBtn.disabled=false;
+        closeLoginModal();
+        setAppLocked(false);
+        toast('✓ Bienvenido ' + rec.username);
+      },220);
+    }
+  },120);
+}
 function persistUsers(){ localStorage.setItem('dt_users', JSON.stringify(DB.users)); }
 function hashPass(v){ return btoa(unescape(encodeURIComponent(v||''))); }
 function updateUserPill(){
@@ -4393,17 +4573,77 @@ function saveUser(){
   renderUsersTable(); toast('✓ Usuario guardado');
 }
 function deleteUser(id){ DB.users = DB.users.filter(u=>u.id!==id); persistUsers(); renderUsersTable(); toast('🗑 Usuario eliminado'); }
-function openLoginModal(){ const o=document.getElementById('loginOverlay'); if(o){o.classList.add('open'); updateUserPill();} }
-function closeLoginModal(){ const o=document.getElementById('loginOverlay'); if(o) o.classList.remove('open'); }
+function openLoginModal(){
+  const o=document.getElementById('loginOverlay');
+  if(o){
+    closeAllDropdowns();
+    o.classList.add('open');
+    const msg=document.getElementById('lg_msg');
+    if(msg) msg.innerHTML = currentUser
+      ? `<span style="color:var(--info)">Sesión actual: ${currentUser.username} (${currentUser.role})</span>`
+      : 'Usa un usuario creado en <span class="accent">Settings → Registro de Usuarios</span>';
+    resetLoginProgress();
+    setTimeout(()=>document.getElementById('lg_user')?.focus(), 60);
+    updateUserPill();
+  }
+}
+function closeLoginModal(){
+  if (document.body.classList.contains('app-locked') && !currentUser) return;
+  const o=document.getElementById('loginOverlay');
+  if(o) o.classList.remove('open');
+  closeAllDropdowns();
+}
 function doLogin(){
   const u=(document.getElementById('lg_user')||{}).value?.trim()||''; const p=(document.getElementById('lg_pass')||{}).value||'';
   const msg=document.getElementById('lg_msg');
   const rec=DB.users.find(x=>x.username.toLowerCase()===u.toLowerCase() && x.pass===hashPass(p));
-  if(!rec){ if(msg) msg.innerHTML='<span style="color:var(--danger)">Usuario o contraseña inválidos</span>'; return; }
-  currentUser={id:rec.id, username:rec.username, role:rec.role}; localStorage.setItem('dt_session_user', JSON.stringify(currentUser));
-  if(msg) msg.innerHTML='<span style="color:var(--success)">✓ Sesión iniciada</span>'; updateUserPill(); toast('✓ Bienvenido ' + rec.username); closeLoginModal();
+  if(!rec){ if(msg) msg.innerHTML='<span style="color:var(--danger)">Usuario o contraseña inválidos</span>'; resetLoginProgress(); return; }
+  runLoginProgress(rec);
 }
-function logoutUser(){ currentUser=null; localStorage.removeItem('dt_session_user'); updateUserPill(); toast('Sesión cerrada'); }
+function logoutUser(){
+  // Cerrar sesión y limpiar UI sin dejar menús abiertos
+  currentUser = null;
+  try { localStorage.removeItem('dt_session_user'); } catch(_) {}
+
+  // Cerrar modal login si está abierto
+  const overlay = document.getElementById('loginOverlay');
+  if (overlay) overlay.classList.remove('open');
+
+  // Cerrar todos los dropdowns
+  closeAllDropdowns();
+
+  // Actualizar estado visual
+  updateUserPill();
+
+  // Mantener resaltado del menú de la página actual
+  document.querySelectorAll('.nav-btn.active').forEach(b => b.classList.remove('active'));
+  if (currentPage === 'tickets') {
+    document.querySelector('nav .nav-btn')?.classList.add('active');
+  } else if (currentPage === 'earnings') {
+    document.getElementById('earningsNavBtn')?.classList.add('active');
+  } else if (currentPage === 'closing') {
+    document.getElementById('closingNavBtn')?.classList.add('active');
+  } else if (currentPage === 'expenses') {
+    document.getElementById('expensesNavBtn')?.classList.add('active');
+  } else if (currentPage === 'alerts') {
+    document.getElementById('alertsNavBtn')?.classList.add('active');
+  } else if (currentPage === 'pl' || currentPage === 'brokerreport') {
+    document.getElementById('reportsBtn')?.classList.add('active');
+  } else if (currentPage === 'settings') {
+    document.getElementById('settingsNavBtn')?.classList.add('active');
+  } else if (['trucks','drivers','brokers'].includes(currentPage)) {
+    document.getElementById('registrosBtn')?.classList.add('active');
+  }
+
+  const msg = document.getElementById('lg_msg');
+  if (msg) msg.innerHTML = 'Usa un usuario creado en <span class="accent">Settings → Registro de Usuarios</span>';
+  const u = document.getElementById('lg_user'); if (u) u.value = '';
+  const pw = document.getElementById('lg_pass'); if (pw) pw.value = '';
+
+  setAppLocked(true);
+  openLoginModal();
+  toast('Sesión cerrada');
+}
 
 // ════════════════════════════════════════════════
 //  SETTINGS MODULE
@@ -4662,6 +4902,13 @@ document.getElementById('exp_date').value = new Date().toISOString().split('T')[
 document.getElementById('t_num').value = nextTicketNum();
 renderAll();
 loadSavedAPIKey();
+if (currentUser) {
+  setAppLocked(false);
+} else {
+  setAppLocked(true);
+  setTimeout(openLoginModal, 150);
+}
 </script>
+<!-- BUILD: login-startup-progress -->
 </body>
 </html>
