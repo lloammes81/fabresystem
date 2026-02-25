@@ -4608,15 +4608,26 @@ function runLoginProgress(rec){
 function persistUsers(){ localStorage.setItem('dt_users', JSON.stringify(DB.users)); }
 function seedDefaultUser(){
   try{
-    const hasUsers = Array.isArray(DB.users) && DB.users.length > 0;
-    if(hasUsers) return;
-    DB.users = [{
-      id: uid(),
-      username: 'admin',
-      role: 'admin',
-      pass: hashPass('1234'),
-      createdAt: new Date().toISOString()
-    }];
+    if(!Array.isArray(DB.users)) DB.users = [];
+    // Normalizar usuarios viejos (algunas versiones usaban "password" en vez de "pass")
+    DB.users = DB.users.map(u => {
+      if(!u) return u;
+      if(!u.pass && u.password){ u.pass = u.password; }
+      if(!u.role) u.role = 'viewer';
+      if(!u.id) u.id = uid();
+      return u;
+    }).filter(Boolean);
+
+    const adminExists = DB.users.some(u => (u.username||'').toLowerCase() === 'admin');
+    if(!adminExists){
+      DB.users.unshift({
+        id: uid(),
+        username: 'admin',
+        role: 'admin',
+        pass: hashPass('1234'),
+        createdAt: new Date().toISOString()
+      });
+    }
     persistUsers();
   }catch(e){ console.error('seedDefaultUser error', e); }
 }
@@ -4653,7 +4664,7 @@ function openLoginModal(){
     const msg=document.getElementById('lg_msg');
     if(msg) msg.innerHTML = currentUser
       ? `<span style="color:var(--info)">Sesión actual: ${currentUser.username} (${currentUser.role})</span>`
-      : 'Usa un usuario creado en <span class="accent">Settings → Registro de Usuarios</span>';
+      : 'Usuario inicial: <span class="accent">admin</span> / <span class="accent">1234</span> (cámbialo en Settings → Registro de Usuarios)';
     resetLoginProgress();
     setTimeout(()=>document.getElementById('lg_user')?.focus(), 60);
     updateUserPill();
@@ -4668,7 +4679,7 @@ function closeLoginModal(){
 function doLogin(){
   const u=(document.getElementById('lg_user')||{}).value?.trim()||''; const p=(document.getElementById('lg_pass')||{}).value||'';
   const msg=document.getElementById('lg_msg');
-  const rec=DB.users.find(x=>x.username.toLowerCase()===u.toLowerCase() && x.pass===hashPass(p));
+  const rec=DB.users.find(x=> (x.username||'').toLowerCase()===u.toLowerCase() && (x.pass || x.password)===hashPass(p));
   if(!rec){ if(msg) msg.innerHTML='<span style="color:var(--danger)">Usuario o contraseña inválidos</span>'; resetLoginProgress(); return; }
   runLoginProgress(rec);
 }
