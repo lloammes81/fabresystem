@@ -2164,6 +2164,7 @@ input,select,textarea,button{
       <div style="display:flex;gap:8px">
         <button class="btn-cancel-modal" style="flex:1" onclick="closeLoginModal()">Cancelar</button>
         <button class="btn btn-primary" style="flex:1;margin-top:0" onclick="doLogin()">Entrar</button>
+<button type="button" id="btnResetPass" class="btn secondary" style="margin-left:8px;">🔑 Restaurar contraseña</button>
       </div>
       <div style="display:flex;gap:8px;margin-top:8px">
         <button class="btn btn-outline btn-sm" style="flex:1" onclick="logoutUser()">Cerrar sesión</button>
@@ -2188,6 +2189,15 @@ input,select,textarea,button{
 </div>
 
 <script>
+
+function __dtMatchUser(username, password){
+  const u = (username||"").trim().toLowerCase();
+  const p = (password||"").toString();
+  let users = [];
+  try { users = JSON.parse(localStorage.getItem("dt_users") || "[]"); } catch(e){}
+  return users.find(x => (x.username||"").toString().trim().toLowerCase() === u && (x.password||"").toString() === p);
+}
+
 // ════════════════════════════════════════════════
 //  DATA STORE
 // ════════════════════════════════════════════════
@@ -5063,5 +5073,144 @@ if (currentUser) {
 
 </script>
 <!-- BUILD: login-startup-progress -->
+
+<script>
+(function(){
+  // --- Bootstrap de usuarios (compatibilidad con versiones anteriores) ---
+  function normalizeUsers(raw){
+    let users = [];
+    try { users = JSON.parse(raw || "[]"); } catch(e){ users = []; }
+    if (!Array.isArray(users)) users = [];
+
+    const normalized = [];
+    for (const u of users){
+      if (!u) continue;
+      if (typeof u === "string"){
+        normalized.push({ username: u, password: "1234", role: "Admin" });
+        continue;
+      }
+      const username = (u.username || u.user || u.usuario || "").toString().trim();
+      const password = (u.password || u.pass || u.clave || "1234").toString();
+      const role = (u.role || u.rol || "Admin").toString();
+      if (username) normalized.push({ username, password, role });
+    }
+
+    // quitar duplicados por username (último gana)
+    const byName = {};
+    for (const u of normalized) byName[u.username.toLowerCase()] = u;
+    return Object.values(byName);
+  }
+
+  function bootstrapUsers(){
+    const keyCandidates = ["dt_users","dumptrack_users","users","usuarios"];
+    let merged = [];
+    for (const k of keyCandidates){
+      const n = normalizeUsers(localStorage.getItem(k));
+      if (n.length) merged = merged.concat(n);
+    }
+
+    // si no hay usuarios, crear admin por defecto
+    if (!merged.length){
+      merged = [{ username: "admin", password: "1234", role: "Admin" }];
+    }
+
+    // dedupe final
+    const byName = {};
+    for (const u of merged) byName[u.username.toLowerCase()] = u;
+    const finalUsers = Object.values(byName);
+
+    // guardar en la llave principal y compatibilidad
+    localStorage.setItem("dt_users", JSON.stringify(finalUsers));
+    localStorage.setItem("dt_users", JSON.stringify(finalUsers));
+    if (!localStorage.getItem("dt_users")) localStorage.setItem("dt_users", JSON.stringify(finalUsers));
+
+    // exponer helper global sin romper diseño
+    window.__DT_GET_USERS__ = function(){
+      try { return JSON.parse(localStorage.getItem("dt_users") || "[]"); } catch(e){ return []; }
+    };
+    window.__DT_SET_USERS__ = function(arr){
+      localStorage.setItem("dt_users", JSON.stringify(arr || []));
+      localStorage.setItem("dt_users", JSON.stringify(arr || []));
+    };
+  }
+
+  bootstrapUsers();
+})();
+</script>
+
+
+<script>
+(function(){
+  function __dtGetUsersSafe(){
+    try {
+      if (window.__DT_GET_USERS__) return window.__DT_GET_USERS__();
+      return JSON.parse(localStorage.getItem("dt_users") || "[]");
+    } catch(e){ return []; }
+  }
+  function __dtSetUsersSafe(arr){
+    try {
+      if (window.__DT_SET_USERS__) return window.__DT_SET_USERS__(arr);
+      localStorage.setItem("dt_users", JSON.stringify(arr || []));
+      localStorage.setItem("dumptrack_users", JSON.stringify(arr || []));
+    } catch(e){}
+  }
+
+  function attachResetBtn(){
+    var btn = document.getElementById("btnResetPass");
+    if (!btn) return;
+
+    btn.addEventListener("click", function(){
+      var u = prompt("Ingrese el usuario para restaurar la contraseña:");
+      if (u === null) return;
+      u = String(u).trim();
+      if (!u){
+        alert("Debe escribir un usuario.");
+        return;
+      }
+
+      var users = __dtGetUsersSafe();
+      var idx = users.findIndex(function(x){
+        return String(x.username || "").trim().toLowerCase() === u.toLowerCase();
+      });
+
+      if (idx < 0){
+        alert("Usuario no encontrado.");
+        return;
+      }
+
+      var newPass = prompt("Nueva contraseña para '" + u + "':");
+      if (newPass === null) return;
+      newPass = String(newPass);
+
+      if (newPass.trim().length < 4){
+        alert("La contraseña debe tener al menos 4 caracteres.");
+        return;
+      }
+
+      var confirmPass = prompt("Confirme la nueva contraseña:");
+      if (confirmPass === null) return;
+      if (String(confirmPass) !== newPass){
+        alert("Las contraseñas no coinciden.");
+        return;
+      }
+
+      users[idx].password = newPass;
+      __dtSetUsersSafe(users);
+
+      alert("✅ Contraseña actualizada correctamente para: " + u);
+    });
+  }
+
+  // attach now and on delayed load (por si el login se renderiza después)
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", attachResetBtn);
+  } else {
+    attachResetBtn();
+  }
+  setTimeout(attachResetBtn, 800);
+  setTimeout(attachResetBtn, 1800);
+})();
+</script>
+
 </body>
 </html>
