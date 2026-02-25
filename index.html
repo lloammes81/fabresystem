@@ -30,18 +30,18 @@ input,select,textarea{font-family:'IBM Plex Sans',sans-serif;}
 /* ── HEADER ── */
 header{
   background:var(--surface);border-bottom:2px solid var(--accent);
-  height:60px;display:flex;align-items:center;padding:0 1.5rem;
-  gap:1.5rem;position:sticky;top:0;z-index:500;
+  height:auto;min-height:60px;display:flex;align-items:center;padding:0 clamp(.75rem,1.5vw,1.5rem);
+  gap:clamp(.5rem,1vw,1.5rem);position:sticky;top:0;z-index:500;flex-wrap:wrap;
 }
-.logo{font-family:'Bebas Neue',sans-serif;font-size:1.8rem;letter-spacing:4px;color:var(--accent);white-space:nowrap;display:flex;align-items:center;gap:8px;}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:clamp(1.3rem, 2.5vw, 1.8rem);letter-spacing:clamp(2px,0.3vw,4px);color:var(--accent);white-space:nowrap;display:flex;align-items:center;gap:8px;}
 .logo em{color:var(--text);font-style:normal;}
 
 /* ── NAV ── */
-nav{display:flex;align-items:center;gap:4px;flex:1;}
+nav{display:flex;align-items:center;gap:clamp(1px,0.3vw,4px);flex:1;min-width:0;overflow:visible;}
 .nav-btn{
   background:none;border:none;color:var(--label);cursor:pointer;
-  padding:8px 14px;font-family:'IBM Plex Mono',monospace;font-size:0.72rem;
-  letter-spacing:1.5px;text-transform:uppercase;border-radius:2px;
+  padding:8px clamp(6px, 1vw, 14px);font-family:'IBM Plex Mono',monospace;font-size:clamp(0.62rem, 0.9vw, 0.72rem);
+  letter-spacing:1px;text-transform:uppercase;border-radius:2px;
   transition:all .15s;white-space:nowrap;position:relative;
 }
 .nav-btn:hover,.nav-btn.active{color:var(--text);background:var(--surface2);}
@@ -256,7 +256,205 @@ body.app-locked header, body.app-locked .page{visibility:hidden;pointer-events:n
 body.app-locked{overflow:hidden;}
 @media(max-width:1100px){.main-grid{grid-template-columns:1fr;}.stats-grid{grid-template-columns:repeat(2,1fr);}}
 @media(max-width:640px){.stats-grid{grid-template-columns:repeat(2,1fr);}.container{padding:1rem;}.week-nav{flex-wrap:wrap;}}
-@media print{header,.form-card,.week-nav,.stats-grid,.table-toolbar .btn,.table-toolbar .search-input,.actions{display:none!important;}body{background:white;color:black;}td,th{color:black;border-color:#ccc;}}
+/* ══════════════════════════════════════════════════════════
+   PRINT STYLES — SISTEMA COMPLETO DE IMPRESIÓN
+══════════════════════════════════════════════════════════ */
+@media print {
+  /* Reset base */
+  *, *::before, *::after { box-shadow: none !important; text-shadow: none !important; }
+  html, body {
+    background: #fff !important;
+    color: #111 !important;
+    font-size: 11pt;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Ocultar todo lo que no se imprime */
+  header, .form-card, .week-nav, .table-toolbar .btn,
+  .table-toolbar .search-input, .actions, .btn-icon,
+  .btn-wk, .btn-primary, .btn-secondary, .btn-add-entry,
+  .modal-overlay, .toast, .login-overlay,
+  .pdf-reader-panel, .ai-results-section,
+  .backup-btn, .btn-print-hide,
+  #dd_settings, .dropdown-menu,
+  select.search-input,
+  .print-hide { display: none !important; }
+
+  /* Mostrar solo la página activa */
+  .page { display: none !important; }
+  .page.active { display: block !important; }
+
+  /* Variables de color para impresión */
+  :root {
+    --bg: #fff;
+    --surface: #fff;
+    --surface2: #f5f5f5;
+    --surface3: #ebebeb;
+    --border: #ccc;
+    --accent: #c47a00;
+    --accent2: #a36600;
+    --danger: #c0392b;
+    --success: #1a7a45;
+    --info: #1565a0;
+    --purple: #5e35b1;
+    --teal: #00796b;
+    --text: #111;
+    --muted: #555;
+    --label: #333;
+  }
+
+  /* ── PRINT HEADER dinámico — visible solo al imprimir ── */
+  .prt-injected-header {
+    display: block !important;
+  }
+  /* Ocultar los print-company-header estáticos viejos (por compatibilidad) */
+  .print-company-header[style*="display:none"] {
+    display: none !important;
+  }
+  .print-company-header {
+    display: flex !important;
+    page-break-inside: avoid;
+  }
+
+  /* ── PRINT FOOTER ── */
+  .print-footer {
+    display: block !important;
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    border-top: 1px solid #ccc;
+    padding: 6px 0 2px;
+    font-size: 7.5pt;
+    color: #888;
+    text-align: center;
+    background: #fff;
+  }
+
+  /* Contenedor */
+  .container { max-width: 100%; padding: 0.5rem 0 !important; margin: 0 !important; }
+
+  /* Stats grid — compacto */
+  .stats-grid {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 6px !important;
+    margin-bottom: 12px !important;
+  }
+  .stat-card {
+    border: 1px solid #ccc !important;
+    border-left: 3px solid #c47a00 !important;
+    padding: 8px 10px !important;
+    background: #fff !important;
+    break-inside: avoid;
+  }
+  .stat-label { color: #555 !important; font-size: 7pt !important; }
+  .stat-value { font-size: 16pt !important; color: #111 !important; }
+  .stat-sub { color: #888 !important; font-size: 7pt !important; }
+
+  /* Section header */
+  .section-header {
+    border-bottom: 1px solid #ccc !important;
+    margin-bottom: 12px !important;
+    padding-bottom: 8px !important;
+  }
+  .section-title h1 { color: #111 !important; font-size: 16pt !important; }
+  .section-title p { color: #555 !important; font-size: 8pt !important; }
+  .section-icon { display: none !important; }
+
+  /* Tables */
+  table { width: 100% !important; border-collapse: collapse !important; font-size: 9pt; }
+  th {
+    background: #f0f0f0 !important;
+    color: #333 !important;
+    border-bottom: 2px solid #ccc !important;
+    padding: 6px 8px !important;
+    font-size: 7.5pt !important;
+    border: 1px solid #ddd !important;
+  }
+  td {
+    padding: 5px 8px !important;
+    border-bottom: 1px solid #e5e5e5 !important;
+    color: #111 !important;
+    font-size: 9pt !important;
+    border: 1px solid #e5e5e5 !important;
+  }
+  tr:hover td { background: none !important; }
+  tr:nth-child(even) td { background: #fafafa !important; }
+  .totals-row td {
+    background: #fff3dc !important;
+    color: #8a5a00 !important;
+    font-weight: 700 !important;
+    border-top: 2px solid #c47a00 !important;
+  }
+  .tbl-wrap { overflow: visible !important; }
+
+  /* Cards */
+  .card { border: 1px solid #ccc !important; break-inside: avoid; background: #fff !important; }
+  .card-header { background: #f5f5f5 !important; border-bottom: 1px solid #ccc !important; }
+  .card-header h3 { color: #111 !important; font-size: 10pt !important; }
+
+  /* Badges */
+  .badge { border: 1px solid #ccc !important; font-size: 7pt !important; }
+  .badge-green { background: #e8f5e9 !important; color: #1a7a45 !important; }
+  .badge-red { background: #fdecea !important; color: #c0392b !important; }
+  .badge-yellow { background: #fff8e1 !important; color: #8a5a00 !important; }
+  .badge-blue { background: #e3f2fd !important; color: #1565a0 !important; }
+  .badge-purple { background: #ede7f6 !important; color: #5e35b1 !important; }
+
+  /* Main grid — una columna al imprimir */
+  .main-grid { grid-template-columns: 1fr !important; gap: 10px !important; }
+
+  /* Earnings */
+  .earnings-hero { border: 1px solid #ccc !important; background: #fff !important; padding: 10px 14px !important; }
+  .earnings-hero::before { display: none !important; }
+  .hero-amount { color: #1a7a45 !important; }
+  .broker-header { border: 1px solid #ccc !important; background: #f5f5f5 !important; }
+  .broker-body { border: 1px solid #ccc !important; border-top: none !important; }
+  .broker-collapsed .broker-body { display: block !important; }
+  .broker-name { color: #111 !important; }
+  .broker-total { color: #1a7a45 !important; }
+
+  /* P&L */
+  .pl-hero { grid-template-columns: repeat(3, 1fr) !important; gap: 8px !important; }
+  .pl-card { border: 1px solid #ccc !important; background: #fff !important; break-inside: avoid; }
+  .pl-val { font-size: 18pt !important; }
+  .bar-chart { display: none !important; }
+  .chart-container { display: none !important; }
+  .pl-table-section { break-inside: avoid; border: 1px solid #ccc !important; margin-bottom: 10px !important; }
+  .pl-section-hdr { background: #f5f5f5 !important; color: #333 !important; border-bottom: 1px solid #ccc !important; }
+
+  /* Closing */
+  .cl-status-bar { border: 1px solid #ccc !important; background: #fff !important; }
+  .cl-broker-card { break-inside: avoid; }
+  .cl-status-pill { border: 1px solid #ccc !important; }
+
+  /* Alerts */
+  .alert-card { border: 1px solid #ccc !important; break-inside: avoid; }
+
+  /* Expenses */
+  .earnings-footer { border: 1px solid #ccc !important; background: #fff !important; }
+
+  /* Settings — no imprimible */
+  #page-settings.active .settings-section { display: none !important; }
+
+  /* Page breaks */
+  .broker-section { break-inside: avoid; }
+  .page-break { page-break-before: always; }
+
+  /* Accent text color para impresión */
+  .accent { color: #c47a00 !important; }
+  .muted { color: #777 !important; }
+  .mono { font-family: 'Courier New', monospace !important; }
+
+  /* Truck / driver avatar */
+  .truck-avatar { background: #f0f0f0 !important; border: 1px solid #ddd !important; }
+  .company-initials { background: #f0f0f0 !important; color: #333 !important; }
+
+  /* Quitar sombras y bordes redondeados */
+  .card, .stat-card, .pl-card, .broker-header, .broker-body,
+  .earnings-hero, .earnings-footer { border-radius: 0 !important; }
+}
 
 /* ── EARNINGS PAGE ── */
 .earnings-hero{
@@ -658,8 +856,7 @@ body.app-locked{overflow:hidden;}
 
 /* ==== AUTO-AJUSTE GLOBAL MONITORES ==== */
 html,body{width:100%;max-width:100%;}
-header{min-height:60px;height:auto;flex-wrap:wrap;row-gap:.35rem;}
-nav{min-width:0;flex-wrap:wrap;}
+nav::-webkit-scrollbar{display:none;}
 .logo{flex-shrink:0;}
 .user-pill{max-width:100%;}
 
@@ -714,18 +911,25 @@ input,select,textarea,button{
 
 @media (max-width: 900px){
   header{
-    padding:.75rem 1rem;
-    align-items:flex-start;
+    padding:.6rem .875rem;
+    gap:.5rem;
+    align-items:center;
   }
   nav{
     order:3;
     width:100%;
-    overflow-x:auto;
+    overflow:visible;
     padding-bottom:2px;
-    flex-wrap:nowrap;
+    flex-wrap:wrap;
+    flex:unset;
+  }
+  .header-right{
+    margin-left:auto;
   }
   .user-pill{
-    margin-left:auto;
+    max-width:160px;
+    overflow:hidden;
+    text-overflow:ellipsis;
   }
   .main-grid{
     grid-template-columns:1fr !important;
@@ -826,6 +1030,18 @@ input,select,textarea,button{
 ═══════════════════════════════════════════════════════ -->
 <div class="page active" id="page-tickets">
 <div class="container">
+  <!-- PRINT HEADER — oculto en pantalla -->
+  <div class="print-company-header" style="display:none">
+    <div class="pch-info">
+      <div class="pch-name" id="prt_tickets_name">DUMPTRACK PRO</div>
+      <div class="pch-sub" id="prt_tickets_sub"></div>
+    </div>
+    <div class="pch-right">
+      <strong>REPORTE DE TICKETS</strong>
+      <span id="prt_tickets_week"></span><br>
+      <span id="prt_tickets_date"></span>
+    </div>
+  </div>
 
   <div class="week-nav">
     <button class="btn-wk" onclick="changeWeek(-1)">◀</button>
@@ -834,7 +1050,7 @@ input,select,textarea,button{
     <h2 id="weekTitle">SEMANA</h2>
     <button class="btn-wk" onclick="goToCurrentWeek()" style="margin-left:8px;border-color:var(--accent);color:var(--accent)">HOY</button>
     <div style="margin-left:auto;display:flex;gap:8px;">
-      <button class="btn btn-success-outline btn-sm" onclick="window.print()">🖨 Imprimir</button>
+      <button class="btn btn-success-outline btn-sm" onclick="printPage('tickets')">🖨 Imprimir</button>
       <button class="btn btn-outline btn-sm" onclick="exportCSV()">⬇ CSV</button>
     </div>
   </div>
@@ -1000,9 +1216,19 @@ input,select,textarea,button{
 ═══════════════════════════════════════════════════════ -->
 <div class="page" id="page-trucks">
 <div class="container">
+  <div class="print-company-header" style="display:none">
+    <div class="pch-info">
+      <div class="pch-name" id="prt_trucks_name">DUMPTRACK PRO</div>
+      <div class="pch-sub" id="prt_trucks_sub"></div>
+    </div>
+    <div class="pch-right"><strong>REGISTRO DE CAMIONES</strong><br><span id="prt_trucks_date"></span></div>
+  </div>
   <div class="section-header">
     <div class="section-icon">🚛</div>
     <div class="section-title"><h1>CAMIONES</h1><p>Registro y gestión de flota</p></div>
+    <div style="margin-left:auto;display:flex;gap:8px">
+      <button class="btn btn-success-outline btn-sm" onclick="printPage('trucks')">🖨 Imprimir</button>
+    </div>
   </div>
 
   <div class="stats-grid">
@@ -1096,9 +1322,19 @@ input,select,textarea,button{
 ═══════════════════════════════════════════════════════ -->
 <div class="page" id="page-drivers">
 <div class="container">
+  <div class="print-company-header" style="display:none">
+    <div class="pch-info">
+      <div class="pch-name" id="prt_drivers_name">DUMPTRACK PRO</div>
+      <div class="pch-sub" id="prt_drivers_sub"></div>
+    </div>
+    <div class="pch-right"><strong>REGISTRO DE CHOFERES</strong><br><span id="prt_drivers_date"></span></div>
+  </div>
   <div class="section-header">
     <div class="section-icon">👤</div>
     <div class="section-title"><h1>CHOFERES</h1><p>Registro de conductores</p></div>
+    <div style="margin-left:auto;display:flex;gap:8px">
+      <button class="btn btn-success-outline btn-sm" onclick="printPage('drivers')">🖨 Imprimir</button>
+    </div>
   </div>
 
   <div class="stats-grid">
@@ -1200,9 +1436,19 @@ input,select,textarea,button{
 ═══════════════════════════════════════════════════════ -->
 <div class="page" id="page-brokers">
 <div class="container">
+  <div class="print-company-header" style="display:none">
+    <div class="pch-info">
+      <div class="pch-name" id="prt_brokers_name">DUMPTRACK PRO</div>
+      <div class="pch-sub" id="prt_brokers_sub"></div>
+    </div>
+    <div class="pch-right"><strong>REGISTRO DE BROKERS</strong><br><span id="prt_brokers_date"></span></div>
+  </div>
   <div class="section-header">
     <div class="section-icon">🤝</div>
     <div class="section-title"><h1>BROKERS</h1><p>Registro de intermediarios y dispatchers</p></div>
+    <div style="margin-left:auto;display:flex;gap:8px">
+      <button class="btn btn-success-outline btn-sm" onclick="printPage('brokers')">🖨 Imprimir</button>
+    </div>
   </div>
 
   <div class="main-grid">
@@ -1279,6 +1525,17 @@ input,select,textarea,button{
 ═══════════════════════════════════════════════════════ -->
 <div class="page" id="page-earnings">
 <div class="container">
+  <div class="print-company-header" style="display:none">
+    <div class="pch-info">
+      <div class="pch-name" id="prt_earnings_name">DUMPTRACK PRO</div>
+      <div class="pch-sub" id="prt_earnings_sub"></div>
+    </div>
+    <div class="pch-right">
+      <strong>GANANCIAS SEMANALES</strong>
+      <span id="prt_earnings_week"></span><br>
+      <span id="prt_earnings_date"></span>
+    </div>
+  </div>
 
   <!-- Week nav -->
   <div class="week-nav">
@@ -1289,7 +1546,7 @@ input,select,textarea,button{
     <button class="btn-wk" onclick="goToCurrentWeekE()" style="margin-left:8px;border-color:var(--success);color:var(--success)">HOY</button>
     <div style="margin-left:auto;display:flex;gap:8px;">
       <button class="btn btn-success-outline btn-sm" onclick="exportEarningsCSV()">⬇ CSV</button>
-      <button class="btn btn-outline btn-sm" onclick="window.print()">🖨 Print</button>
+      <button class="btn btn-outline btn-sm" onclick="printPage('earnings')">🖨 Imprimir</button>
     </div>
   </div>
 
@@ -1386,6 +1643,17 @@ input,select,textarea,button{
 ═══════════════════════════════════════════════════════ -->
 <div class="page" id="page-closing">
 <div class="container">
+  <div class="print-company-header" style="display:none">
+    <div class="pch-info">
+      <div class="pch-name" id="prt_closing_name">DUMPTRACK PRO</div>
+      <div class="pch-sub" id="prt_closing_sub"></div>
+    </div>
+    <div class="pch-right">
+      <strong>CIERRE DE SEMANA</strong>
+      <span id="prt_closing_week"></span><br>
+      <span id="prt_closing_date"></span>
+    </div>
+  </div>
 
   <!-- Week nav -->
   <div class="week-nav">
@@ -1396,7 +1664,7 @@ input,select,textarea,button{
     <button class="btn-wk" onclick="clGoToCurrentWeek()" style="margin-left:8px;border-color:var(--accent);color:var(--accent)">HOY</button>
     <div style="margin-left:auto;display:flex;gap:8px">
       <button class="btn btn-outline btn-sm" onclick="exportClosingCSV()">⬇ CSV</button>
-      <button class="btn btn-outline btn-sm" onclick="window.print()">🖨 Print</button>
+      <button class="btn btn-outline btn-sm" onclick="printPage('closing')">🖨 Imprimir</button>
     </div>
   </div>
 
@@ -1596,14 +1864,22 @@ input,select,textarea,button{
 ═══════════════════════════════════════════════════ -->
 <div class="page" id="page-expenses">
 <div class="container">
+  <div class="print-company-header" style="display:none">
+    <div class="pch-info">
+      <div class="pch-name" id="prt_expenses_name">DUMPTRACK PRO</div>
+      <div class="pch-sub" id="prt_expenses_sub"></div>
+    </div>
+    <div class="pch-right"><strong>REGISTRO DE GASTOS</strong><br><span id="prt_expenses_date"></span></div>
+  </div>
   <div class="section-header">
     <div class="section-icon">📉</div>
     <div class="section-title"><h1>REGISTRO DE GASTOS</h1><p>Control de gastos operacionales</p></div>
     <div style="margin-left:auto;display:flex;gap:8px">
-      <select id="exp_filterMonth" onchange="renderExpenses()" class="search-input" style="width:160px">
+      <select id="exp_filterMonth" onchange="renderExpenses()" class="search-input print-hide" style="width:160px">
         <option value="">Todos los meses</option>
       </select>
       <button class="btn btn-outline btn-sm" onclick="exportExpensesCSV()">⬇ CSV</button>
+      <button class="btn btn-success-outline btn-sm" onclick="printPage('expenses')">🖨 Imprimir</button>
     </div>
   </div>
 
@@ -1687,17 +1963,25 @@ input,select,textarea,button{
 ═══════════════════════════════════════════════════ -->
 <div class="page" id="page-pl">
 <div class="container">
+  <div class="print-company-header" style="display:none">
+    <div class="pch-info">
+      <div class="pch-name" id="prt_pl_name">DUMPTRACK PRO</div>
+      <div class="pch-sub" id="prt_pl_sub"></div>
+    </div>
+    <div class="pch-right"><strong>REPORTE P&amp;L — PÉRDIDAS Y GANANCIAS</strong><br><span id="prt_pl_period"></span><br><span id="prt_pl_date"></span></div>
+  </div>
   <div class="section-header">
     <div class="section-icon">📈</div>
     <div class="section-title"><h1>P&L — PÉRDIDAS Y GANANCIAS</h1><p>Análisis financiero detallado</p></div>
     <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
-      <select id="pl_period" onchange="renderPL()" class="search-input" style="width:160px">
+      <select id="pl_period" onchange="renderPL()" class="search-input print-hide" style="width:160px">
         <option value="week">Esta Semana</option>
         <option value="month" selected>Este Mes</option>
         <option value="quarter">Este Trimestre</option>
         <option value="year">Este Año</option>
       </select>
       <button class="btn btn-outline btn-sm" onclick="exportPLCSV()">⬇ CSV</button>
+      <button class="btn btn-success-outline btn-sm" onclick="printPage('pl')">🖨 Imprimir</button>
     </div>
   </div>
 
@@ -1768,16 +2052,24 @@ input,select,textarea,button{
 ═══════════════════════════════════════════════════ -->
 <div class="page" id="page-brokerreport">
 <div class="container">
+  <div class="print-company-header" style="display:none">
+    <div class="pch-info">
+      <div class="pch-name" id="prt_brr_name">DUMPTRACK PRO</div>
+      <div class="pch-sub" id="prt_brr_sub"></div>
+    </div>
+    <div class="pch-right"><strong>REPORTE POR BROKER</strong><br><span id="prt_brr_period"></span><br><span id="prt_brr_date"></span></div>
+  </div>
   <div class="section-header">
     <div class="section-icon">🤝</div>
     <div class="section-title"><h1>REPORTE POR BROKER</h1><p>Análisis de rendimiento y pagos</p></div>
     <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
-      <select id="brr_period" onchange="renderBrokerReport()" class="search-input" style="width:160px">
+      <select id="brr_period" onchange="renderBrokerReport()" class="search-input print-hide" style="width:160px">
         <option value="month" selected>Este Mes</option>
         <option value="quarter">Este Trimestre</option>
         <option value="year">Este Año</option>
         <option value="all">Todo el Tiempo</option>
       </select>
+      <button class="btn btn-success-outline btn-sm" onclick="printPage('brokerreport')">🖨 Imprimir</button>
     </div>
   </div>
 
@@ -1802,11 +2094,19 @@ input,select,textarea,button{
 ═══════════════════════════════════════════════════ -->
 <div class="page" id="page-alerts">
 <div class="container">
+  <div class="print-company-header" style="display:none">
+    <div class="pch-info">
+      <div class="pch-name" id="prt_alerts_name">DUMPTRACK PRO</div>
+      <div class="pch-sub" id="prt_alerts_sub"></div>
+    </div>
+    <div class="pch-right"><strong>ALERTAS DE VENCIMIENTO</strong><br><span id="prt_alerts_date"></span></div>
+  </div>
   <div class="section-header">
     <div class="section-icon">🔔</div>
     <div class="section-title"><h1>ALERTAS DE VENCIMIENTO</h1><p>Documentos y licencias próximas a vencer</p></div>
-    <div style="margin-left:auto">
+    <div style="margin-left:auto;display:flex;gap:8px">
       <button class="btn btn-outline btn-sm" onclick="renderAlerts()">🔄 Actualizar</button>
+      <button class="btn btn-success-outline btn-sm" onclick="printPage('alerts')">🖨 Imprimir</button>
     </div>
   </div>
 
@@ -5209,6 +5509,320 @@ if (currentUser) {
   }
   setTimeout(attachResetBtn, 800);
   setTimeout(attachResetBtn, 1800);
+})();
+</script>
+
+
+<div id="resetPassModal" style="display:none;position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.6);align-items:center;justify-content:center;padding:16px;">
+  <div id="resetPassCard" style="width:min(460px,96vw);background:#1c2230;border:1px solid rgba(255,255,255,.12);border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,.45);padding:16px;color:#fff;">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;">
+      <div style="font-weight:700;font-size:1.05rem;">🔑 Restaurar contraseña</div>
+      <button type="button" id="btnCloseResetModal" style="border:1px solid rgba(255,255,255,.18);background:#2a3142;color:#fff;border-radius:8px;padding:6px 10px;cursor:pointer;">✕</button>
+    </div>
+    <div style="color:rgba(255,255,255,.75);font-size:.9rem;margin-bottom:12px;">
+      Cambia la contraseña de un usuario registrado.
+    </div>
+
+    <div style="display:grid;gap:10px;">
+      <label style="display:grid;gap:4px;">
+        <span style="font-size:.86rem;color:rgba(255,255,255,.85);">Usuario</span>
+        <input id="rpUser" type="text" placeholder="admin" style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.18);background:#101521;color:#fff;outline:none;">
+      </label>
+
+      <label style="display:grid;gap:4px;">
+        <span style="font-size:.86rem;color:rgba(255,255,255,.85);">Nueva contraseña</span>
+        <input id="rpPass1" type="password" placeholder="Mínimo 4 caracteres" style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.18);background:#101521;color:#fff;outline:none;">
+      </label>
+
+      <label style="display:grid;gap:4px;">
+        <span style="font-size:.86rem;color:rgba(255,255,255,.85);">Confirmar contraseña</span>
+        <input id="rpPass2" type="password" placeholder="Repita la contraseña" style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.18);background:#101521;color:#fff;outline:none;">
+      </label>
+    </div>
+
+    <div id="rpMsg" style="min-height:20px;margin-top:10px;font-size:.88rem;color:#ffcf66;"></div>
+
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:8px;">
+      <button type="button" id="btnCancelReset" style="border:1px solid rgba(255,255,255,.18);background:#2a3142;color:#fff;border-radius:10px;padding:9px 12px;cursor:pointer;">Cancelar</button>
+      <button type="button" id="btnSaveReset" style="border:1px solid #b88300;background:#d4a017;color:#221700;border-radius:10px;padding:9px 12px;font-weight:700;cursor:pointer;">Guardar</button>
+    </div>
+  </div>
+</div>
+
+
+<script>
+(function(){
+  function __dtGetUsersSafe(){
+    try {
+      if (window.__DT_GET_USERS__) return window.__DT_GET_USERS__();
+      return JSON.parse(localStorage.getItem("dt_users") || "[]");
+    } catch(e){ return []; }
+  }
+  function __dtSetUsersSafe(arr){
+    try {
+      if (window.__DT_SET_USERS__) return window.__DT_SET_USERS__(arr);
+      localStorage.setItem("dt_users", JSON.stringify(arr || []));
+      localStorage.setItem("dumptrack_users", JSON.stringify(arr || []));
+    } catch(e){}
+  }
+
+  function $(id){ return document.getElementById(id); }
+
+  function setMsg(msg, ok){
+    var el = $("rpMsg");
+    if (!el) return;
+    el.textContent = msg || "";
+    el.style.color = ok ? "#8df5a6" : "#ffcf66";
+  }
+
+  function openResetModal(){
+    var modal = $("resetPassModal");
+    if (!modal) return;
+    modal.style.display = "flex";
+    setMsg("");
+    if ($("rpPass1")) $("rpPass1").value = "";
+    if ($("rpPass2")) $("rpPass2").value = "";
+    // prefill current username if input exists in login
+    var loginUser = document.querySelector('input[type="text"][placeholder*="Usuario"], input[name*="user"], #username, #loginUser');
+    if ($("rpUser")) {
+      if (loginUser && loginUser.value && !$("rpUser").value) $("rpUser").value = loginUser.value.trim();
+      $("rpUser").focus();
+    }
+  }
+
+  function closeResetModal(){
+    var modal = $("resetPassModal");
+    if (!modal) return;
+    modal.style.display = "none";
+  }
+
+  function saveReset(){
+    var user = (($("rpUser") && $("rpUser").value) || "").trim();
+    var p1 = (($("rpPass1") && $("rpPass1").value) || "");
+    var p2 = (($("rpPass2") && $("rpPass2").value) || "");
+    if (!user) return setMsg("Escribe el usuario.");
+    if (p1.trim().length < 4) return setMsg("La contraseña debe tener mínimo 4 caracteres.");
+    if (p1 !== p2) return setMsg("Las contraseñas no coinciden.");
+
+    var users = __dtGetUsersSafe();
+    var idx = users.findIndex(function(x){
+      return String(x.username || "").trim().toLowerCase() === user.toLowerCase();
+    });
+    if (idx < 0) return setMsg("Usuario no encontrado.");
+
+    users[idx].password = p1;
+    __dtSetUsersSafe(users);
+    setMsg("✅ Contraseña actualizada correctamente.", true);
+
+    // clear fields and close after short delay
+    setTimeout(function(){ closeResetModal(); }, 700);
+  }
+
+  function bindResetUI(){
+    var btn = $("btnResetPass");
+    if (btn && !btn.__boundReset){
+      btn.__boundReset = true;
+      btn.addEventListener("click", openResetModal);
+    }
+
+    var closeA = $("btnCloseResetModal");
+    var closeB = $("btnCancelReset");
+    var save = $("btnSaveReset");
+    var modal = $("resetPassModal");
+
+    if (closeA && !closeA.__boundReset){ closeA.__boundReset = true; closeA.addEventListener("click", closeResetModal); }
+    if (closeB && !closeB.__boundReset){ closeB.__boundReset = true; closeB.addEventListener("click", closeResetModal); }
+    if (save && !save.__boundReset){ save.__boundReset = true; save.addEventListener("click", saveReset); }
+
+    if (modal && !modal.__boundReset){
+      modal.__boundReset = true;
+      modal.addEventListener("click", function(e){
+        if (e.target === modal) closeResetModal();
+      });
+    }
+
+    document.addEventListener("keydown", function(e){
+      if (e.key === "Escape" && modal && modal.style.display !== "none") {
+        closeResetModal();
+      }
+    });
+
+    var p2 = $("rpPass2");
+    if (p2 && !p2.__boundReset){
+      p2.__boundReset = true;
+      p2.addEventListener("keydown", function(e){
+        if (e.key === "Enter") saveReset();
+      });
+    }
+  }
+
+  if (document.readyState === "loading"){
+    document.addEventListener("DOMContentLoaded", bindResetUI);
+  } else {
+    bindResetUI();
+  }
+  setTimeout(bindResetUI, 700);
+  setTimeout(bindResetUI, 1600);
+})();
+</script>
+
+<!-- ══════════════════════════════════════════════════════════
+     PRINT FOOTER — visible only on print
+══════════════════════════════════════════════════════════ -->
+<div class="print-footer" id="globalPrintFooter" style="display:none">
+  <span id="prt_footer_company">DumpTrack Pro</span> &nbsp;·&nbsp;
+  Impreso el <span id="prt_footer_date"></span> &nbsp;·&nbsp;
+  <span id="prt_footer_user"></span> &nbsp;·&nbsp;
+  Generado por DumpTrack Pro
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════════════
+   SISTEMA DE IMPRESIÓN PROFESIONAL — printPage()
+   Incluye logo, datos de empresa y pie de página
+══════════════════════════════════════════════════════════ */
+(function(){
+  function getCfg(){ try { return JSON.parse(localStorage.getItem('dumptrack_cfg')||'{}'); } catch(e){ return {}; } }
+  function getCurrentUser(){ try { return localStorage.getItem('dt_current_user')||''; } catch(e){ return ''; } }
+  function fmtDate(d){ return d.toLocaleDateString('es-US',{year:'numeric',month:'long',day:'numeric'}); }
+
+  function getPeriodLabel(){
+    var sel = document.getElementById('pl_period');
+    if(sel){ var opts={week:'Esta Semana',month:'Este Mes',quarter:'Este Trimestre',year:'Este Año'}; return opts[sel.value]||sel.options[sel.selectedIndex]?.text||''; }
+    sel = document.getElementById('brr_period');
+    if(sel) return sel.options[sel.selectedIndex]?.text||'';
+    return '';
+  }
+
+  function getWeekInfo(pageKey){
+    var ids = {
+      tickets:{ title:'weekTitle', label:'weekLabel' },
+      earnings:{ title:'ew_weekTitle', label:'ew_weekLabel' },
+      closing:{ title:'cl_weekTitle', label:'cl_weekLabel' }
+    };
+    var m = ids[pageKey];
+    if(!m) return '';
+    var t = document.getElementById(m.title)?.textContent||'';
+    var l = document.getElementById(m.label)?.textContent||'';
+    return [t, l].filter(Boolean).join(' — ');
+  }
+
+  var PAGE_LABELS = {
+    tickets:'REPORTE DE TICKETS',
+    earnings:'GANANCIAS SEMANALES',
+    closing:'CIERRE DE SEMANA',
+    expenses:'REGISTRO DE GASTOS',
+    pl:'P&L — PÉRDIDAS Y GANANCIAS',
+    brokerreport:'REPORTE POR BROKER',
+    trucks:'REGISTRO DE CAMIONES',
+    drivers:'REGISTRO DE CHOFERES',
+    brokers:'REGISTRO DE BROKERS',
+    alerts:'ALERTAS DE VENCIMIENTO'
+  };
+
+  function buildPrintHeader(pageKey, cfg, now){
+    var companyName = cfg.companyName || 'DUMPTRACK PRO';
+    var lines = [];
+    var parts = [];
+    if(cfg.dba) parts.push('DBA: '+cfg.dba);
+    if(cfg.entityType) parts.push(cfg.entityType);
+    if(parts.length) lines.push(parts.join(' · '));
+    var contact = [];
+    if(cfg.phone) contact.push(cfg.phone);
+    if(cfg.email) contact.push(cfg.email);
+    if(contact.length) lines.push(contact.join(' · '));
+    var legal = [];
+    if(cfg.ein) legal.push('EIN: '+cfg.ein);
+    if(cfg.dot) legal.push('DOT: '+cfg.dot);
+    if(cfg.mc)  legal.push('MC: '+cfg.mc);
+    if(legal.length) lines.push(legal.join(' · '));
+    if(cfg.address) lines.push(cfg.address);
+
+    var reportLabel = PAGE_LABELS[pageKey] || 'REPORTE';
+    var periodStr = '';
+    if(['tickets','earnings','closing'].indexOf(pageKey)>-1) periodStr = getWeekInfo(pageKey);
+    else if(['pl','brokerreport'].indexOf(pageKey)>-1) periodStr = getPeriodLabel();
+
+    var logoHtml = '';
+    if(cfg.logoData){
+      logoHtml = '<img src="'+cfg.logoData+'" style="max-height:70px;max-width:140px;object-fit:contain;margin-right:16px;"/>';
+    } else {
+      logoHtml = '<div style="font-size:2.2rem;margin-right:12px">🚛</div>';
+    }
+
+    return '<div class="print-company-header" style="display:flex;align-items:flex-start;justify-content:space-between;border-bottom:3px solid #c47a00;padding-bottom:12px;margin-bottom:18px;gap:16px">'
+      + '<div style="display:flex;align-items:center">'
+      + logoHtml
+      + '<div>'
+      + '<div style="font-size:18pt;font-weight:700;color:#111;letter-spacing:1px;font-family:sans-serif">'+companyName+'</div>'
+      + lines.map(function(l){ return '<div style="font-size:8.5pt;color:#555;margin-top:2px;font-family:monospace">'+l+'</div>'; }).join('')
+      + '</div>'
+      + '</div>'
+      + '<div style="text-align:right;min-width:180px">'
+      + '<div style="font-size:13pt;font-weight:700;color:#c47a00;letter-spacing:1px;font-family:sans-serif">'+reportLabel+'</div>'
+      + (periodStr ? '<div style="font-size:9pt;color:#333;margin-top:4px;font-family:monospace">'+periodStr+'</div>' : '')
+      + '<div style="font-size:8pt;color:#777;margin-top:6px;font-family:monospace">'+fmtDate(now)+'</div>'
+      + (getCurrentUser() ? '<div style="font-size:8pt;color:#777;font-family:monospace">Usuario: '+getCurrentUser()+'</div>' : '')
+      + '</div>'
+      + '</div>';
+  }
+
+  function buildPrintFooter(cfg, now){
+    var companyName = cfg.companyName || 'DumpTrack Pro';
+    return companyName + ' &nbsp;·&nbsp; Impreso el '+fmtDate(now)
+      + (getCurrentUser() ? ' &nbsp;·&nbsp; Usuario: '+getCurrentUser() : '')
+      + ' &nbsp;·&nbsp; Generado por DumpTrack Pro';
+  }
+
+  // Inject a hidden print-only container in each page that gets filled on print
+  function injectPrintContainers(){
+    var pages = ['tickets','earnings','closing','expenses','pl','brokerreport','trucks','drivers','brokers','alerts'];
+    pages.forEach(function(p){
+      var pageEl = document.getElementById('page-'+p);
+      if(!pageEl) return;
+      var container = pageEl.querySelector('.container');
+      if(!container) return;
+      // Remove any existing injected header
+      var existing = container.querySelector('.prt-injected-header');
+      if(existing) existing.remove();
+      // Create placeholder (filled on printPage call)
+      var div = document.createElement('div');
+      div.className = 'prt-injected-header';
+      div.style.cssText = 'display:none';
+      div.setAttribute('data-page', p);
+      container.insertBefore(div, container.firstChild);
+    });
+  }
+
+  window.printPage = function(pageKey){
+    var cfg = getCfg();
+    var now = new Date();
+
+    // Fill header for active page
+    var pageEl = document.getElementById('page-'+pageKey);
+    if(pageEl){
+      var hdr = pageEl.querySelector('.prt-injected-header');
+      if(hdr) hdr.innerHTML = buildPrintHeader(pageKey, cfg, now);
+    }
+
+    // Fill global footer
+    var footer = document.getElementById('globalPrintFooter');
+    if(footer) footer.innerHTML = buildPrintFooter(cfg, now);
+
+    // Also update any old static print-company-header divs (from previous session)
+    var oldHdrs = document.querySelectorAll('.print-company-header[style*="display:none"]');
+    oldHdrs.forEach(function(el){ el.style.display='none'; });
+
+    setTimeout(function(){ window.print(); }, 100);
+  };
+
+  // Initialize on load
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded', injectPrintContainers);
+  } else {
+    injectPrintContainers();
+  }
+
 })();
 </script>
 
