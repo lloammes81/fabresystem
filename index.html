@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DumpTrack Pro — Sistema de Gestión</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root {
   --bg: #0a0a0a;
@@ -2368,6 +2369,37 @@ input,select,textarea,button{
 
       <button class="settings-save-btn" onclick="saveSettings()">💾 GUARDAR CONFIGURACIÓN</button>
 
+      <!-- ── SUPABASE ── -->
+      <div class="settings-section" style="margin-top:1.5rem;border:1px solid #2c4a3e;background:rgba(76,191,176,.04)">
+        <div class="settings-section-hdr">
+          <span style="font-size:1.2rem">🗄</span>
+          <h3 style="color:var(--teal)">CONEXIÓN SUPABASE</h3>
+          <p id="sb_statusLabel" style="color:var(--muted)">Sin configurar</p>
+        </div>
+        <div style="padding:1.5rem">
+          <p style="font-size:0.72rem;color:var(--muted);font-family:'IBM Plex Mono',monospace;margin-bottom:1rem">
+            Obtén estos valores en <a href="https://app.supabase.com" target="_blank" style="color:var(--teal)">app.supabase.com</a> → Tu Proyecto → Settings → API
+          </p>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
+            <div class="form-group" style="margin-bottom:0">
+              <label>Project URL</label>
+              <input type="text" id="cfg_sb_url" placeholder="https://xxxx.supabase.co" style="border-color:#2c4a3e" oninput="updateSbStatus()"/>
+            </div>
+            <div class="form-group" style="margin-bottom:0">
+              <label>Anon Public Key</label>
+              <input type="password" id="cfg_sb_key" placeholder="eyJhbGciOiJIUzI1NiIs..." style="border-color:#2c4a3e" oninput="updateSbStatus()"/>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="backup-btn" style="border-color:var(--teal);color:var(--teal)" onclick="saveSupabaseConfig()">💾 Guardar Conexión</button>
+            <button class="backup-btn" style="border-color:var(--teal);color:var(--teal)" onclick="testSupabaseConnection()">🔌 Probar Conexión</button>
+            <button class="backup-btn" style="border-color:var(--info);color:var(--info)" onclick="syncAllToSupabase()">⬆ Subir datos locales → Supabase</button>
+            <button class="backup-btn" style="border-color:var(--info);color:var(--info)" onclick="pullAllFromSupabase()">⬇ Descargar Supabase → Local</button>
+          </div>
+          <div id="sb_syncLog" style="margin-top:1rem;font-size:0.7rem;font-family:'IBM Plex Mono',monospace;color:var(--muted);min-height:18px"></div>
+        </div>
+      </div>
+
       <!-- ── DATOS ── -->
       <div class="data-danger-zone" style="margin-top:1.5rem">
         <h4>🗃 BACKUP Y DATOS</h4>
@@ -2437,40 +2469,69 @@ input,select,textarea,button{
 <!-- ── LOGIN MODAL ── -->
 <div class="login-overlay" id="loginOverlay" onclick="if(event.target===this) closeLoginModal()">
   <div class="login-box">
-    <div class="login-box-hdr">
-      <span style="font-size:1.1rem">🔐</span>
-      <h3>INICIAR SESIÓN</h3>
-      <button class="btn-icon" onclick="closeLoginModal()" style="margin-left:auto;padding:5px 9px">✕</button>
-    </div>
-    <div class="login-box-body">
-      <div class="form-group">
-        <label>Usuario</label>
-        <input type="text" id="lg_user" placeholder="admin" autocomplete="username" onkeydown="if(event.key==='Enter') doLogin()">
+
+    <!-- ── PANEL: REGISTRO PRIMER USUARIO ── -->
+    <div id="loginPanelRegister" style="display:none">
+      <div class="login-box-hdr" style="border-top-color:var(--success)">
+        <span style="font-size:1.1rem">🚛</span>
+        <h3 style="color:var(--success)">BIENVENIDO A DUMPTRACK PRO</h3>
       </div>
-      <div class="form-group">
-        <label>Contraseña</label>
-        <input type="password" id="lg_pass" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter') doLogin()">
-      </div>
-      <div id="lg_msg" style="min-height:18px;font-size:0.72rem;font-family:'IBM Plex Mono',monospace;color:var(--muted);margin:2px 0 8px">
-        Usa un usuario creado en <span class="accent">Settings → Registro de Usuarios</span>
-      </div>
-      <div class="login-progress-wrap" id="lg_loaderWrap">
-        <div class="login-progress-meta">
-          <span id="lg_loaderText">Cargando perfil...</span>
-          <span id="lg_loaderPct">0%</span>
+      <div class="login-box-body">
+        <div style="font-size:0.72rem;font-family:'IBM Plex Mono',monospace;color:var(--muted);margin-bottom:1.1rem;line-height:1.7;padding:10px 12px;background:var(--surface2);border-radius:3px;border-left:3px solid var(--success)">
+          Primera vez en el sistema.<br>Crea tu cuenta de administrador para comenzar.
         </div>
-        <div class="login-progress-bar"><div class="login-progress-fill" id="lg_loaderFill"></div></div>
-      </div>
-      <div style="display:flex;gap:8px">
-        <button class="btn-cancel-modal" style="flex:1" onclick="closeLoginModal()">Cancelar</button>
-        <button class="btn btn-primary" style="flex:1;margin-top:0" onclick="doLogin()">Entrar</button>
-<button type="button" id="btnResetPass" class="btn secondary" style="margin-left:8px;">🔑 Restaurar contraseña</button>
-      </div>
-      <div style="display:flex;gap:8px;margin-top:8px">
-        <button class="btn btn-outline btn-sm" style="flex:1" onclick="logoutUser()">Cerrar sesión</button>
-        <button class="btn btn-outline btn-sm" style="flex:1" onclick="showPage('settings');closeLoginModal();setTimeout(()=>document.getElementById('usersSettingsSection')?.scrollIntoView({behavior:'smooth',block:'start'}),120)">Ir a usuarios</button>
+        <div class="form-group">
+          <label>Nombre de usuario *</label>
+          <input type="text" id="reg_user" placeholder="admin" autocomplete="username" onkeydown="if(event.key==='Enter') document.getElementById('reg_pass').focus()">
+        </div>
+        <div class="form-group">
+          <label>Contraseña *</label>
+          <input type="password" id="reg_pass" placeholder="Mínimo 4 caracteres" autocomplete="new-password" onkeydown="if(event.key==='Enter') document.getElementById('reg_pass2').focus()">
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label>Confirmar contraseña *</label>
+          <input type="password" id="reg_pass2" placeholder="Repite la contraseña" autocomplete="new-password" onkeydown="if(event.key==='Enter') registerFirstUser()">
+        </div>
+        <div id="reg_msg" style="min-height:18px;font-size:0.72rem;font-family:'IBM Plex Mono',monospace;color:var(--muted);margin:8px 0"></div>
+        <button class="btn btn-primary" style="background:var(--success);margin-top:4px" onclick="registerFirstUser()">CREAR CUENTA Y ENTRAR</button>
       </div>
     </div>
+
+    <!-- ── PANEL: LOGIN NORMAL ── -->
+    <div id="loginPanelLogin">
+      <div class="login-box-hdr">
+        <span style="font-size:1.1rem">🔐</span>
+        <h3>INICIAR SESIÓN</h3>
+        <button class="btn-icon" onclick="closeLoginModal()" id="loginCloseBtn" style="margin-left:auto;padding:5px 9px">✕</button>
+      </div>
+      <div class="login-box-body">
+        <div class="form-group">
+          <label>Usuario</label>
+          <input type="text" id="lg_user" placeholder="usuario" autocomplete="username" onkeydown="if(event.key==='Enter') doLogin()">
+        </div>
+        <div class="form-group">
+          <label>Contraseña</label>
+          <input type="password" id="lg_pass" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter') doLogin()">
+        </div>
+        <div id="lg_msg" style="min-height:18px;font-size:0.72rem;font-family:'IBM Plex Mono',monospace;color:var(--muted);margin:2px 0 8px"></div>
+        <div class="login-progress-wrap" id="lg_loaderWrap">
+          <div class="login-progress-meta">
+            <span id="lg_loaderText">Cargando perfil...</span>
+            <span id="lg_loaderPct">0%</span>
+          </div>
+          <div class="login-progress-bar"><div class="login-progress-fill" id="lg_loaderFill"></div></div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn-cancel-modal" style="flex:1" onclick="closeLoginModal()">Cancelar</button>
+          <button class="btn btn-primary" style="flex:1;margin-top:0" onclick="doLogin()">Entrar</button>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button class="btn btn-outline btn-sm" style="flex:1" onclick="logoutUser()">Cerrar sesión</button>
+          <button class="btn btn-outline btn-sm" style="flex:1" onclick="showPage('settings');closeLoginModal();setTimeout(()=>document.getElementById('usersSettingsSection')?.scrollIntoView({behavior:'smooth',block:'start'}),120)">Gestionar usuarios</button>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -2499,6 +2560,172 @@ function __dtMatchUser(username, password){
 }
 
 // ════════════════════════════════════════════════
+//  SUPABASE CLIENT
+// ════════════════════════════════════════════════
+let _sbClient = null;
+
+function getSbConfig() {
+  return {
+    url: localStorage.getItem('dt_sb_url') || '',
+    key: localStorage.getItem('dt_sb_key') || ''
+  };
+}
+
+function initSupabaseClient() {
+  const { url, key } = getSbConfig();
+  if (url && key && window.supabase) {
+    try {
+      _sbClient = window.supabase.createClient(url, key);
+      return true;
+    } catch(e) {
+      console.warn('Supabase init error:', e);
+      _sbClient = null;
+    }
+  }
+  return false;
+}
+
+// Fire-and-forget upsert of a single record to a table
+async function sbUpsert(table, record) {
+  if (!_sbClient) return;
+  try {
+    const { error } = await _sbClient.from('dt_' + table).upsert({
+      id: record.id,
+      data: record,
+      updated_at: new Date().toISOString()
+    });
+    if (error) console.warn('Supabase upsert error [' + table + ']:', error.message);
+  } catch(e) { console.warn('Supabase upsert exception:', e); }
+}
+
+// Fire-and-forget delete from a table
+async function sbDelete(table, id) {
+  if (!_sbClient) return;
+  try {
+    const { error } = await _sbClient.from('dt_' + table).delete().eq('id', id);
+    if (error) console.warn('Supabase delete error [' + table + ']:', error.message);
+  } catch(e) { console.warn('Supabase delete exception:', e); }
+}
+
+// Load all data from Supabase into DB + localStorage
+async function loadFromSupabase() {
+  if (!_sbClient) return false;
+  const tables = ['tickets', 'trucks', 'drivers', 'brokers', 'earnings', 'expenses'];
+  try {
+    sbLog('Cargando datos desde Supabase...');
+    const results = await Promise.all(
+      tables.map(t => _sbClient.from('dt_' + t).select('id, data'))
+    );
+    tables.forEach((t, i) => {
+      if (results[i].error) { console.warn('Load error [' + t + ']:', results[i].error.message); return; }
+      if (results[i].data && results[i].data.length > 0) {
+        DB[t] = results[i].data.map(row => row.data);
+        localStorage.setItem('dt_' + t, JSON.stringify(DB[t]));
+      }
+    });
+    // week_closings
+    const wcRes = await _sbClient.from('dt_week_closings').select('id, data');
+    if (!wcRes.error && wcRes.data && wcRes.data.length > 0) {
+      DB.weekClosings = {};
+      wcRes.data.forEach(row => { DB.weekClosings[row.id] = row.data; });
+      localStorage.setItem('dt_weekClosings', JSON.stringify(DB.weekClosings));
+    }
+    // config
+    const cfgRes = await _sbClient.from('dt_config').select('data').eq('id', 'main').maybeSingle();
+    if (!cfgRes.error && cfgRes.data && cfgRes.data.data) {
+      saveConfig(cfgRes.data.data);
+    }
+    // users
+    const usrRes = await _sbClient.from('dt_app_users').select('id, data');
+    if (!usrRes.error && usrRes.data && usrRes.data.length > 0) {
+      DB.users = usrRes.data.map(r => r.data);
+      localStorage.setItem('dt_users', JSON.stringify(DB.users));
+    }
+    sbLog('✓ Datos cargados desde Supabase');
+    return true;
+  } catch(e) {
+    console.warn('loadFromSupabase error:', e);
+    sbLog('⚠ Error al cargar desde Supabase, usando datos locales');
+    return false;
+  }
+}
+
+// Push all local DB to Supabase
+async function syncAllToSupabase() {
+  if (!_sbClient) { sbLog('⚠ Supabase no configurado'); toast('⚠ Configura Supabase primero', true); return; }
+  sbLog('Subiendo todos los datos...');
+  const tables = ['tickets', 'trucks', 'drivers', 'brokers', 'earnings', 'expenses'];
+  let ok = 0, err = 0;
+  for (const t of tables) {
+    for (const rec of DB[t]) {
+      const r = await _sbClient.from('dt_' + t).upsert({ id: rec.id, data: rec, updated_at: new Date().toISOString() });
+      r.error ? err++ : ok++;
+    }
+  }
+  // week_closings
+  for (const [key, val] of Object.entries(DB.weekClosings)) {
+    const r = await _sbClient.from('dt_week_closings').upsert({ id: key, data: val, updated_at: new Date().toISOString() });
+    r.error ? err++ : ok++;
+  }
+  // config
+  const cfg = loadConfig();
+  await _sbClient.from('dt_config').upsert({ id: 'main', data: cfg, updated_at: new Date().toISOString() });
+  // users
+  for (const u of DB.users) {
+    const r = await _sbClient.from('dt_app_users').upsert({ id: u.id, data: u, updated_at: new Date().toISOString() });
+    r.error ? err++ : ok++;
+  }
+  sbLog('✓ Subida completada: ' + ok + ' registros. ' + (err > 0 ? err + ' errores.' : ''));
+  toast('✓ Datos subidos a Supabase: ' + ok + ' registros');
+}
+
+// Pull all from Supabase to local
+async function pullAllFromSupabase() {
+  if (!_sbClient) { sbLog('⚠ Supabase no configurado'); toast('⚠ Configura Supabase primero', true); return; }
+  const ok = await loadFromSupabase();
+  if (ok) { renderAll(); renderSettings(); toast('✓ Datos descargados de Supabase'); }
+}
+
+// Supabase config helpers
+function saveSupabaseConfig() {
+  const url = (document.getElementById('cfg_sb_url')||{}).value?.trim() || '';
+  const key = (document.getElementById('cfg_sb_key')||{}).value?.trim() || '';
+  localStorage.setItem('dt_sb_url', url);
+  localStorage.setItem('dt_sb_key', key);
+  initSupabaseClient();
+  updateSbStatus();
+  toast('✓ Conexión Supabase guardada');
+}
+async function testSupabaseConnection() {
+  if (!initSupabaseClient()) { sbLog('⚠ URL y Key son necesarios'); return; }
+  sbLog('Probando conexión...');
+  try {
+    const { data, error } = await _sbClient.from('dt_config').select('id').limit(1);
+    if (error) {
+      sbLog('❌ Error: ' + error.message);
+      toast('❌ Error de conexión: ' + error.message, true);
+    } else {
+      sbLog('✓ Conexión exitosa con Supabase');
+      toast('✓ Conexión Supabase OK');
+    }
+  } catch(e) { sbLog('❌ ' + e.message); toast('❌ ' + e.message, true); }
+}
+function updateSbStatus() {
+  const url = (document.getElementById('cfg_sb_url')||{}).value || localStorage.getItem('dt_sb_url') || '';
+  const key = (document.getElementById('cfg_sb_key')||{}).value || localStorage.getItem('dt_sb_key') || '';
+  const lbl = document.getElementById('sb_statusLabel');
+  if (!lbl) return;
+  if (url && key) lbl.innerHTML = '<span style="color:var(--teal)">✓ Configurado</span>';
+  else if (url || key) lbl.innerHTML = '<span style="color:var(--accent)">⚠ Incompleto</span>';
+  else lbl.innerHTML = '<span style="color:var(--muted)">Sin configurar</span>';
+}
+function sbLog(msg) {
+  const el = document.getElementById('sb_syncLog');
+  if (el) el.textContent = msg;
+  console.log('[Supabase]', msg);
+}
+
+// ════════════════════════════════════════════════
 //  DATA STORE
 // ════════════════════════════════════════════════
 const DB = {
@@ -2509,7 +2736,13 @@ const DB = {
   brokers:   JSON.parse(localStorage.getItem('dt_brokers')   || '[]'),
   users:     JSON.parse(localStorage.getItem('dt_users')     || '[]'),
 };
-function save(key) { localStorage.setItem('dt_' + key, JSON.stringify(DB[key])); }
+// Save to localStorage AND fire async upsert to Supabase for every record
+function save(key) {
+  localStorage.setItem('dt_' + key, JSON.stringify(DB[key]));
+  if (_sbClient) {
+    DB[key].forEach(rec => sbUpsert(key, rec));
+  }
+}
 function uid() { return Date.now().toString(36) + Math.random().toString(36).substr(2,5); }
 
 // ════════════════════════════════════════════════
@@ -2609,9 +2842,12 @@ function closeModal() { document.getElementById('deleteModal').classList.remove(
 function confirmDelete() {
   if (!deleteTarget) return;
   const col = deleteTarget.collection;
-  DB[col] = DB[col].filter(x => x.id !== deleteTarget.id);
+  const delId = deleteTarget.id;
+  DB[col] = DB[col].filter(x => x.id !== delId);
   if (col === 'expenses') saveExpenses();
   else save(col);
+  // Also delete from Supabase
+  if (_sbClient) sbDelete(col, delId);
   closeModal();
   seedDefaultUser();
 renderAll();
@@ -3476,6 +3712,7 @@ function addEarningEntry() {
 
   DB.earnings.push(entry);
   localStorage.setItem('dt_earnings', JSON.stringify(DB.earnings));
+  if (_sbClient) sbUpsert('earnings', entry);
   toast('✓ ' + ticketNum + ' — NET ' + fmtAmt(netPrice));
 
   // Clear entry fields (keep broker & date)
@@ -3496,6 +3733,7 @@ function addEarningEntry() {
 function deleteEarning(id) {
   DB.earnings = DB.earnings.filter(e => e.id !== id);
   localStorage.setItem('dt_earnings', JSON.stringify(DB.earnings));
+  if (_sbClient) sbDelete('earnings', id);
   renderEarnings();
   toast('🗑 Entrada eliminada');
 }
@@ -3647,7 +3885,17 @@ document.addEventListener('click', e => {
 //  CLOSING WEEK DATA
 // ════════════════════════════════════════════════
 DB.weekClosings = JSON.parse(localStorage.getItem('dt_weekClosings') || '{}');
-function clSaveClosings() { localStorage.setItem('dt_weekClosings', JSON.stringify(DB.weekClosings)); }
+function clSaveClosings() {
+  localStorage.setItem('dt_weekClosings', JSON.stringify(DB.weekClosings));
+  if (_sbClient) {
+    const key = clWeekKey(clOffset);
+    const val = DB.weekClosings[key];
+    if (val) {
+      _sbClient.from('dt_week_closings').upsert({ id: key, data: val, updated_at: new Date().toISOString() })
+        .then(r => { if (r.error) console.warn('Supabase weekClosings sync error:', r.error.message); });
+    }
+  }
+}
 
 let clOffset = 0;
 
@@ -3880,7 +4128,12 @@ function exportClosingCSV() {
 //  EXPENSES MODULE
 // ════════════════════════════════════════════════
 DB.expenses = JSON.parse(localStorage.getItem('dt_expenses') || '[]');
-function saveExpenses() { localStorage.setItem('dt_expenses', JSON.stringify(DB.expenses)); }
+function saveExpenses() {
+  localStorage.setItem('dt_expenses', JSON.stringify(DB.expenses));
+  if (_sbClient) {
+    DB.expenses.forEach(rec => sbUpsert('expenses', rec));
+  }
+}
 
 const EXP_CATS = {
   fuel:         { label:'Diesel / Fuel',        color:'#e8890a', icon:'⛽' },
@@ -4915,7 +5168,15 @@ function runLoginProgress(rec){
     }
   },120);
 }
-function persistUsers(){ localStorage.setItem('dt_users', JSON.stringify(DB.users)); }
+function persistUsers(){
+  localStorage.setItem('dt_users', JSON.stringify(DB.users));
+  if (_sbClient) {
+    DB.users.forEach(u => {
+      _sbClient.from('dt_app_users').upsert({ id: u.id, data: u, updated_at: new Date().toISOString() })
+        .then(r => { if (r.error) console.warn('Supabase users sync error:', r.error.message); });
+    });
+  }
+}
 function seedDefaultUser(){
   try{
     if(!Array.isArray(DB.users)) DB.users = [];
@@ -4927,17 +5188,6 @@ function seedDefaultUser(){
       if(!u.id) u.id = uid();
       return u;
     }).filter(Boolean);
-
-    const adminExists = DB.users.some(u => (u.username||'').toLowerCase() === 'admin');
-    if(!adminExists){
-      DB.users.unshift({
-        id: uid(),
-        username: 'admin',
-        role: 'admin',
-        pass: hashPass('1234'),
-        createdAt: new Date().toISOString()
-      });
-    }
     persistUsers();
   }catch(e){ console.error('seedDefaultUser error', e); }
 }
@@ -4966,21 +5216,68 @@ function saveUser(){
   renderUsersTable(); toast('✓ Usuario guardado');
 }
 function deleteUser(id){ DB.users = DB.users.filter(u=>u.id!==id); persistUsers(); renderUsersTable(); toast('🗑 Usuario eliminado'); }
+
+// ── Registro del primer usuario ──────────────────────────────
+function registerFirstUser(){
+  const username = (document.getElementById('reg_user')||{}).value?.trim() || '';
+  const pass1    = (document.getElementById('reg_pass')||{}).value || '';
+  const pass2    = (document.getElementById('reg_pass2')||{}).value || '';
+  const msg      = document.getElementById('reg_msg');
+
+  if (!username)      { if(msg) msg.innerHTML='<span style="color:var(--danger)">⚠ El nombre de usuario es requerido</span>'; return; }
+  if (pass1.length < 4){ if(msg) msg.innerHTML='<span style="color:var(--danger)">⚠ La contraseña debe tener al menos 4 caracteres</span>'; return; }
+  if (pass1 !== pass2) { if(msg) msg.innerHTML='<span style="color:var(--danger)">⚠ Las contraseñas no coinciden</span>'; return; }
+
+  const newUser = { id: uid(), username, role: 'admin', pass: hashPass(pass1), createdAt: new Date().toISOString() };
+  DB.users.push(newUser);
+  persistUsers();
+  if(msg) msg.innerHTML = '<span style="color:var(--success)">✓ Cuenta creada. Entrando...</span>';
+
+  // Auto-login with the new user
+  setTimeout(() => runLoginProgress(newUser), 400);
+}
+
 function openLoginModal(){
-  const o=document.getElementById('loginOverlay');
-  if(o){
-    closeAllDropdowns();
+  const o = document.getElementById('loginOverlay');
+  if(!o) return;
+  closeAllDropdowns();
+
+  const noUsers = !DB.users || DB.users.length === 0;
+  const regPanel   = document.getElementById('loginPanelRegister');
+  const loginPanel = document.getElementById('loginPanelLogin');
+  const closeBtn   = document.getElementById('loginCloseBtn');
+
+  if(noUsers){
+    // Show registration form, hide normal login
+    if(regPanel)   { regPanel.style.display = 'block'; }
+    if(loginPanel) { loginPanel.style.display = 'none'; }
+    // Clear register fields
+    ['reg_user','reg_pass','reg_pass2'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+    const msg = document.getElementById('reg_msg');
+    if(msg) msg.textContent = '';
     o.classList.add('open');
-    const msg=document.getElementById('lg_msg');
+    setTimeout(()=>document.getElementById('reg_user')?.focus(), 60);
+  } else {
+    // Show normal login
+    if(regPanel)   { regPanel.style.display = 'none'; }
+    if(loginPanel) { loginPanel.style.display = 'block'; }
+    // Hide cancel/close button if app is locked (user must login)
+    const locked = document.body.classList.contains('app-locked') && !currentUser;
+    if(closeBtn) closeBtn.style.display = locked ? 'none' : '';
+    const msg = document.getElementById('lg_msg');
     if(msg) msg.innerHTML = currentUser
       ? `<span style="color:var(--info)">Sesión actual: ${currentUser.username} (${currentUser.role})</span>`
-      : 'Usuario inicial: <span class="accent">admin</span> / <span class="accent">1234</span> (cámbialo en Settings → Registro de Usuarios)';
+      : '';
     resetLoginProgress();
+    o.classList.add('open');
     setTimeout(()=>document.getElementById('lg_user')?.focus(), 60);
     updateUserPill();
   }
 }
 function closeLoginModal(){
+  // No se puede cerrar si: la app está bloqueada sin sesión activa, O si no hay usuarios aún
+  const noUsers = !DB.users || DB.users.length === 0;
+  if (noUsers) return;
   if (document.body.classList.contains('app-locked') && !currentUser) return;
   const o=document.getElementById('loginOverlay');
   if(o) o.classList.remove('open');
@@ -5045,7 +5342,13 @@ const CFG_KEY = 'dt_config';
 function loadConfig() {
   try { return JSON.parse(localStorage.getItem(CFG_KEY) || '{}'); } catch { return {}; }
 }
-function saveConfig(cfg) { localStorage.setItem(CFG_KEY, JSON.stringify(cfg)); }
+function saveConfig(cfg) {
+  localStorage.setItem(CFG_KEY, JSON.stringify(cfg));
+  if (_sbClient) {
+    _sbClient.from('dt_config').upsert({ id: 'main', data: cfg, updated_at: new Date().toISOString() })
+      .then(r => { if (r.error) console.warn('Supabase config sync error:', r.error.message); });
+  }
+}
 
 function renderSettings() {
   const cfg = loadConfig();
@@ -5081,6 +5384,13 @@ function renderSettings() {
 
   updatePreview();
   renderUsersTable();
+
+  // Load Supabase config into inputs
+  const sbUrlEl = document.getElementById('cfg_sb_url');
+  const sbKeyEl = document.getElementById('cfg_sb_key');
+  if (sbUrlEl) sbUrlEl.value = localStorage.getItem('dt_sb_url') || '';
+  if (sbKeyEl) sbKeyEl.value = localStorage.getItem('dt_sb_key') || '';
+  updateSbStatus();
 }
 
 function updatePreview() {
@@ -5286,6 +5596,9 @@ function renderAll() {
 // ════════════════════════════════════════════════
 //  INIT
 // ════════════════════════════════════════════════
+// ════════════════════════════════════════════════
+//  INIT — Carga Supabase si está configurado
+// ════════════════════════════════════════════════
 updateWeekUI();
 updateWeekE();
 clUpdateWeekUI();
@@ -5293,14 +5606,25 @@ document.getElementById('t_date').value = new Date().toISOString().split('T')[0]
 document.getElementById('ew_date').value = new Date().toISOString().split('T')[0];
 document.getElementById('exp_date').value = new Date().toISOString().split('T')[0];
 document.getElementById('t_num').value = nextTicketNum();
-renderAll();
-loadSavedAPIKey();
-if (currentUser) {
-  setAppLocked(false);
-} else {
-  setAppLocked(true);
-  setTimeout(openLoginModal, 150);
-}
+
+// Initialize Supabase client from saved config
+initSupabaseClient();
+
+// If Supabase is configured, load data from it before rendering
+(async function initApp() {
+  if (_sbClient) {
+    await loadFromSupabase();
+  }
+  seedDefaultUser();
+  renderAll();
+  loadSavedAPIKey();
+  if (currentUser) {
+    setAppLocked(false);
+  } else {
+    setAppLocked(true);
+    setTimeout(openLoginModal, 150);
+  }
+})();
 
 /* ── FULLSCREEN STARTUP (auto on first interaction/login, ESC exits native fullscreen) ── */
 (function(){
@@ -5409,10 +5733,8 @@ if (currentUser) {
       if (n.length) merged = merged.concat(n);
     }
 
-    // si no hay usuarios, crear admin por defecto
-    if (!merged.length){
-      merged = [{ username: "admin", password: "1234", role: "Admin" }];
-    }
+    // si no hay usuarios, no crear nada — el sistema pedirá registro al abrir
+    // (eliminado: no crear admin/1234 por defecto)
 
     // dedupe final
     const byName = {};
