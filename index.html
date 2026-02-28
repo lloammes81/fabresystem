@@ -2524,6 +2524,10 @@ input,select,textarea,button{
         <div style="display:flex;gap:8px">
           <button class="btn-cancel-modal" style="flex:1" onclick="closeLoginModal()">Cancelar</button>
           <button class="btn btn-primary" style="flex:1;margin-top:0" onclick="doLogin()">Entrar</button>
+        <button class="btn btn-primary" style="flex:1;margin-top:0" onclick="doLogin()">Entrar</button>
+        </div>
+        <div style="margin-top:10px">
+          <button id="btnCreateFirstUser" class="btn btn-outline btn-sm" style="width:100%;display:none" onclick="openFirstUserPanel()">👤 Create first user (admin)</button>
         </div>
         <div style="display:flex;gap:8px;margin-top:8px">
           <button class="btn btn-outline btn-sm" style="flex:1" onclick="logoutUser()">Cerrar sesión</button>
@@ -5250,8 +5254,10 @@ function openLoginModal(){
   const regPanel   = document.getElementById('loginPanelRegister');
   const loginPanel = document.getElementById('loginPanelLogin');
   const closeBtn   = document.getElementById('loginCloseBtn');
+  const firstBtn  = document.getElementById('btnCreateFirstUser');
 
   if(noUsers){
+    if(firstBtn) firstBtn.style.display = 'none';
     // Show registration form, hide normal login
     if(regPanel)   { regPanel.style.display = 'block'; }
     if(loginPanel) { loginPanel.style.display = 'none'; }
@@ -5262,6 +5268,7 @@ function openLoginModal(){
     o.classList.add('open');
     setTimeout(()=>document.getElementById('reg_user')?.focus(), 60);
   } else {
+    if(firstBtn) firstBtn.style.display = 'none';
     // Show normal login
     if(regPanel)   { regPanel.style.display = 'none'; }
     if(loginPanel) { loginPanel.style.display = 'block'; }
@@ -5278,6 +5285,17 @@ function openLoginModal(){
     updateUserPill();
   }
 }
+function openFirstUserPanel(){
+  const regPanel   = document.getElementById('loginPanelRegister');
+  const loginPanel = document.getElementById('loginPanelLogin');
+  if(regPanel)   regPanel.style.display = 'block';
+  if(loginPanel) loginPanel.style.display = 'none';
+  ['reg_user','reg_pass','reg_pass2'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  const msg = document.getElementById('reg_msg');
+  if(msg) msg.textContent = '';
+  setTimeout(()=>document.getElementById('reg_user')?.focus(), 60);
+}
+
 function closeLoginModal(){
   // No se puede cerrar si: la app está bloqueada sin sesión activa, O si no hay usuarios aún
   const noUsers = !DB.users || DB.users.length === 0;
@@ -5291,14 +5309,22 @@ function doLogin(){
   const u=(document.getElementById('lg_user')||{}).value?.trim()||'';
   const p=(document.getElementById('lg_pass')||{}).value||'';
   const msg=document.getElementById('lg_msg');
+
+  // Compatible con contraseñas guardadas como hash (base64) o texto plano
   const hashed = hashPass(p);
-  const rec = DB.users.find(x => {
+
+  const rec = (DB.users||[]).find(x => {
     const uMatch = (x.username||'').toLowerCase() === u.toLowerCase();
-    // Accept hash stored in either 'pass' or 'password' field
-    const pMatch = (x.pass === hashed) || (x.password === hashed);
+    const stored = (x.pass ?? x.password ?? '');
+    const pMatch = (stored === hashed) || (stored === p);
     return uMatch && pMatch;
   });
-  if(!rec){ if(msg) msg.innerHTML='<span style="color:var(--danger)">Usuario o contraseña inválidos</span>'; resetLoginProgress(); return; }
+
+  if(!rec){
+    if(msg) msg.innerHTML='<span style="color:var(--danger)">Usuario o contraseña inválidos</span>';
+    resetLoginProgress();
+    return;
+  }
   runLoginProgress(rec);
 }
 function logoutUser(){
@@ -5496,6 +5522,7 @@ function updateCfgKeyStatus(key) {
   } else if (key && key.length > 5) {
     el.innerHTML = '<span style="color:var(--accent)">⚠ Formato inválido — debe iniciar con sk-ant-</span>';
   } else {
+    if(firstBtn) firstBtn.style.display = 'none';
     el.innerHTML = '<span style="color:var(--muted)">Obtén tu key en <a href="https://console.anthropic.com" target="_blank" style="color:var(--info)">console.anthropic.com</a></span>';
   }
 }
@@ -5632,6 +5659,7 @@ initSupabaseClient();
   if (currentUser) {
     setAppLocked(false);
   } else {
+    if(firstBtn) firstBtn.style.display = 'none';
     setAppLocked(true);
     setTimeout(openLoginModal, 150);
   }
@@ -5702,6 +5730,7 @@ initSupabaseClient();
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', ensureFsButton, {once:true});
   } else {
+    if(firstBtn) firstBtn.style.display = 'none';
     ensureFsButton();
   }
 })();
@@ -5789,6 +5818,7 @@ initSupabaseClient();
     if(cfg.logoData){
       logoHtml = '<img src="'+cfg.logoData+'" style="max-height:70px;max-width:140px;object-fit:contain;margin-right:16px;"/>';
     } else {
+    if(firstBtn) firstBtn.style.display = 'none';
       logoHtml = '<div style="font-size:2.2rem;margin-right:12px">🚛</div>';
     }
 
@@ -5862,6 +5892,7 @@ initSupabaseClient();
   if(document.readyState==='loading'){
     document.addEventListener('DOMContentLoaded', injectPrintContainers);
   } else {
+    if(firstBtn) firstBtn.style.display = 'none';
     injectPrintContainers();
   }
 
