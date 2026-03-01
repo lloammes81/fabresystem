@@ -457,7 +457,25 @@ body.app-locked{overflow:hidden;}
   .earnings-hero, .earnings-footer { border-radius: 0 !important; }
 }
 
-/* ── EARNINGS PAGE ── */
+/* ── ADDRESS AUTOCOMPLETE ── */
+.addr-ac{
+  position:absolute;top:100%;left:0;right:0;z-index:900;
+  background:var(--surface);border:1px solid var(--accent);border-top:none;
+  border-radius:0 0 4px 4px;max-height:220px;overflow-y:auto;
+  box-shadow:0 8px 24px rgba(0,0,0,.5);display:none;
+}
+.addr-ac.open{display:block;}
+.addr-ac-item{
+  padding:8px 12px;cursor:pointer;border-bottom:1px solid var(--border);
+  font-size:0.78rem;transition:background .12s;
+}
+.addr-ac-item:last-child{border-bottom:none;}
+.addr-ac-item:hover{background:var(--surface2);}
+.addr-ac-city{font-weight:600;color:var(--text);}
+.addr-ac-addr{font-size:0.68rem;color:var(--muted);font-family:'IBM Plex Mono',monospace;margin-top:1px;}
+.addr-ac-tag{display:inline-block;margin-left:6px;padding:1px 6px;border-radius:2px;font-size:0.58rem;font-family:'IBM Plex Mono',monospace;background:rgba(245,166,35,.12);color:var(--accent);border:1px solid rgba(245,166,35,.25);}
+
+
 .earnings-hero{
   background:var(--surface);border:1px solid var(--border);border-radius:4px;
   padding:1.5rem 2rem;margin-bottom:1.5rem;
@@ -481,8 +499,9 @@ body.app-locked{overflow:hidden;}
 /* Quick entry panel */
 .qentry-panel{background:var(--surface);border:1px solid var(--border);border-radius:3px;padding:1.25rem;margin-bottom:1.5rem;}
 .qentry-title{font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:2px;color:var(--accent);margin-bottom:1rem;display:flex;align-items:center;gap:8px;}
-.qentry-grid{display:grid;grid-template-columns:160px 130px 150px 150px 110px 120px 120px 140px auto;gap:10px;align-items:end;}
+.qentry-grid{display:grid;grid-template-columns:150px 120px 140px 140px 90px 100px 100px 110px auto;gap:10px;align-items:end;}
 .qentry-grid .form-group{margin-bottom:0;}
+.qentry-row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;align-items:end;}
 .btn-add-entry{background:var(--success);border:none;color:#000;padding:9px 20px;cursor:pointer;border-radius:2px;font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:2px;transition:all .15s;white-space:nowrap;height:38px;}
 .btn-add-entry:hover{background:#3d9e6a;transform:translateY(-1px);}
 
@@ -899,6 +918,9 @@ input,select,textarea,button{
   .qentry-grid{
     grid-template-columns:repeat(2,minmax(180px,1fr));
   }
+  .qentry-row2{
+    grid-template-columns:1fr !important;
+  }
   .settings-body{
     grid-template-columns:1fr;
   }
@@ -1105,9 +1127,29 @@ input,select,textarea,button{
           <select id="t_broker"><option value="">-- Seleccionar --</option></select>
         </div>
 
-        <div class="form-group"><label>🔴 Desde (Pickup) *</label><input type="text" id="t_from" placeholder="Dirección de origen"/></div>
+        <div class="form-group">
+          <label>🔴 Desde (Pickup) *</label>
+          <div style="display:grid;grid-template-columns:auto 1fr;gap:6px;align-items:center">
+            <select id="t_fromCity" onchange="autofillCity('t_from','t_fromCity')" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:2px;font-family:'IBM Plex Mono',monospace;font-size:0.72rem;outline:none;min-width:130px">
+              <option value="">📍 Ciudad...</option>
+            </select>
+            <input type="text" id="t_from" placeholder="Escribe ciudad o dirección..." autocomplete="off"
+              oninput="addrAutocomplete(this,'t_from_ac')" onfocus="addrAutocomplete(this,'t_from_ac')" onblur="setTimeout(()=>hideAC('t_from_ac'),200)"/>
+          </div>
+          <div id="t_from_ac" class="addr-ac"></div>
+        </div>
         <div class="route-sep">▼ RUTA</div>
-        <div class="form-group"><label>🟢 Hasta (Delivery) *</label><input type="text" id="t_to" placeholder="Dirección de destino"/></div>
+        <div class="form-group">
+          <label>🟢 Hasta (Delivery) *</label>
+          <div style="display:grid;grid-template-columns:auto 1fr;gap:6px;align-items:center">
+            <select id="t_toCity" onchange="autofillCity('t_to','t_toCity')" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:2px;font-family:'IBM Plex Mono',monospace;font-size:0.72rem;outline:none;min-width:130px">
+              <option value="">📍 Ciudad...</option>
+            </select>
+            <input type="text" id="t_to" placeholder="Escribe ciudad o dirección..." autocomplete="off"
+              oninput="addrAutocomplete(this,'t_to_ac')" onfocus="addrAutocomplete(this,'t_to_ac')" onblur="setTimeout(()=>hideAC('t_to_ac'),200)"/>
+          </div>
+          <div id="t_to_ac" class="addr-ac"></div>
+        </div>
 
         <div class="form-group"><label>Material</label>
           <select id="t_material">
@@ -1284,9 +1326,29 @@ input,select,textarea,button{
           <select id="fi_broker"><option value="">-- Seleccionar --</option></select>
         </div>
 
-        <div class="form-group"><label>🔴 Desde (Pickup) *</label><input type="text" id="fi_from" placeholder="Dirección de origen"/></div>
+        <div class="form-group">
+          <label>🔴 Desde (Pickup) *</label>
+          <div style="display:grid;grid-template-columns:auto 1fr;gap:6px;align-items:center">
+            <select id="fi_fromCity" onchange="autofillCity('fi_from','fi_fromCity')" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:2px;font-family:'IBM Plex Mono',monospace;font-size:0.72rem;outline:none;min-width:130px">
+              <option value="">📍 Ciudad...</option>
+            </select>
+            <input type="text" id="fi_from" placeholder="Escribe ciudad o dirección..." autocomplete="off"
+              oninput="addrAutocomplete(this,'fi_from_ac')" onfocus="addrAutocomplete(this,'fi_from_ac')" onblur="setTimeout(()=>hideAC('fi_from_ac'),200)"/>
+          </div>
+          <div id="fi_from_ac" class="addr-ac"></div>
+        </div>
         <div class="route-sep">▼ RUTA</div>
-        <div class="form-group"><label>🟢 Hasta (Delivery) *</label><input type="text" id="fi_to" placeholder="Dirección de destino"/></div>
+        <div class="form-group">
+          <label>🟢 Hasta (Delivery) *</label>
+          <div style="display:grid;grid-template-columns:auto 1fr;gap:6px;align-items:center">
+            <select id="fi_toCity" onchange="autofillCity('fi_to','fi_toCity')" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:2px;font-family:'IBM Plex Mono',monospace;font-size:0.72rem;outline:none;min-width:130px">
+              <option value="">📍 Ciudad...</option>
+            </select>
+            <input type="text" id="fi_to" placeholder="Escribe ciudad o dirección..." autocomplete="off"
+              oninput="addrAutocomplete(this,'fi_to_ac')" onfocus="addrAutocomplete(this,'fi_to_ac')" onblur="setTimeout(()=>hideAC('fi_to_ac'),200)"/>
+          </div>
+          <div id="fi_to_ac" class="addr-ac"></div>
+        </div>
 
         <div class="form-group"><label>Material</label>
           <select id="fi_material">
@@ -1828,7 +1890,7 @@ input,select,textarea,button{
   <div class="qentry-panel">
     <div class="qentry-title">
       <span style="font-size:1rem">➕</span> REGISTRAR TICKET RÁPIDO
-      <span style="font-size:0.65rem;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-weight:normal;letter-spacing:1px;margin-left:4px">— el camión se llena automático</span>
+      <span style="font-size:0.65rem;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-weight:normal;letter-spacing:1px;margin-left:4px">— campos compartidos con Tickets</span>
     </div>
     <div class="qentry-grid">
       <div class="form-group">
@@ -1866,6 +1928,39 @@ input,select,textarea,button{
         <div id="ew_netPreview" class="autofill-indicator" style="display:flex;margin-top:4px">NET: $0.00</div>
       </div>
       <button class="btn-add-entry" onclick="addEarningEntry()">+ AGREGAR</button>
+    </div>
+    <!-- Fila 2: Ruta + Material + Chofer -->
+    <div class="qentry-row2" style="margin-top:10px">
+      <div style="display:grid;grid-template-columns:1fr 16px 1fr;gap:6px;align-items:center">
+        <div class="form-group" style="margin-bottom:0;position:relative">
+          <label>🔴 Desde (Pickup)</label>
+          <input type="text" id="ew_from" placeholder="Ciudad o dirección de origen" autocomplete="off"
+            oninput="addrAutocomplete(this,'ew_from_ac')" onfocus="addrAutocomplete(this,'ew_from_ac')" onblur="setTimeout(()=>hideAC('ew_from_ac'),200)"/>
+          <div id="ew_from_ac" class="addr-ac"></div>
+        </div>
+        <div style="text-align:center;font-family:'IBM Plex Mono',monospace;font-size:0.6rem;color:var(--accent);margin-top:18px">▶</div>
+        <div class="form-group" style="margin-bottom:0;position:relative">
+          <label>🟢 Hasta (Delivery)</label>
+          <input type="text" id="ew_to" placeholder="Ciudad o dirección de destino" autocomplete="off"
+            oninput="addrAutocomplete(this,'ew_to_ac')" onfocus="addrAutocomplete(this,'ew_to_ac')" onblur="setTimeout(()=>hideAC('ew_to_ac'),200)"/>
+          <div id="ew_to_ac" class="addr-ac"></div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="form-group" style="margin-bottom:0">
+          <label>Material</label>
+          <select id="ew_material">
+            <option value="">-- Material --</option>
+            <option>Dirt</option><option>Gravel</option><option>Sand</option>
+            <option>Concrete</option><option>Asphalt</option><option>Debris</option>
+            <option>Fill</option><option>Stone</option><option>Other</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label>👤 Chofer</label>
+          <select id="ew_driver"><option value="">-- Chofer --</option></select>
+        </div>
+      </div>
     </div>
     <!-- Autocomplete dropdown -->
     <div id="ew_autocomplete" style="display:none;background:var(--surface2);border:1px solid var(--border);border-top:none;border-radius:0 0 3px 3px;max-height:180px;overflow-y:auto;position:relative;z-index:10;margin-top:-1px;"></div>
@@ -3413,6 +3508,8 @@ function clearTicketForm() {
   document.getElementById('t_discountFields').style.display = 'none';
   document.getElementById('t_discountDisplay').textContent = '$0.00';
   document.getElementById('t_truckBadge').style.display = 'none';
+  const tfc = document.getElementById('t_fromCity'); if(tfc) tfc.value='';
+  const ttc = document.getElementById('t_toCity'); if(ttc) ttc.value='';
   document.getElementById('t_date').value = new Date().toISOString().split('T')[0];
   document.getElementById('t_num').value = nextTicketNum();
 }
@@ -3627,6 +3724,8 @@ function clearFacturaForm() {
   document.getElementById('fi_material').value = '';
   document.getElementById('fi_rateType').value = 'ton';
   document.getElementById('fi_date').value = new Date().toISOString().split('T')[0];
+  const ffc = document.getElementById('fi_fromCity'); if(ffc) ffc.value='';
+  const ftc = document.getElementById('fi_toCity'); if(ftc) ftc.value='';
   document.getElementById('fi_num').value = nextFacturaNum();
 }
 
@@ -3938,6 +4037,151 @@ function renderMinas() {
     </tr>`;
   }).join('');
 }
+
+// ════════════════════════════════════════════════
+//  FLORIDA CITIES — AUTO-FILL DIRECCIÓN
+// ════════════════════════════════════════════════
+const FL_CITIES = [
+  // ─── PALM BEACH COUNTY ───
+  { city:'West Palm Beach', label:'West Palm Beach, FL', address:'West Palm Beach, FL 33401' },
+  { city:'Boca Raton', label:'Boca Raton, FL', address:'Boca Raton, FL 33433' },
+  { city:'Boynton Beach', label:'Boynton Beach, FL', address:'Boynton Beach, FL 33426' },
+  { city:'Delray Beach', label:'Delray Beach, FL', address:'Delray Beach, FL 33444' },
+  { city:'Lake Worth', label:'Lake Worth, FL', address:'Lake Worth, FL 33460' },
+  { city:'Wellington', label:'Wellington, FL', address:'Wellington, FL 33414' },
+  { city:'Loxahatchee', label:'Loxahatchee, FL', address:'Loxahatchee, FL 33470' },
+  { city:'Jupiter', label:'Jupiter, FL', address:'Jupiter, FL 33458' },
+  { city:'Palm Beach Gardens', label:'Palm Beach Gardens, FL', address:'Palm Beach Gardens, FL 33418' },
+  { city:'Royal Palm Beach', label:'Royal Palm Beach, FL', address:'Royal Palm Beach, FL 33411' },
+  { city:'Belle Glade', label:'Belle Glade, FL', address:'Belle Glade, FL 33430' },
+  { city:'Pahokee', label:'Pahokee, FL', address:'Pahokee, FL 33476' },
+  { city:'South Bay', label:'South Bay, FL', address:'South Bay, FL 33493' },
+  { city:'Riviera Beach', label:'Riviera Beach, FL', address:'Riviera Beach, FL 33404' },
+  { city:'Lake Park', label:'Lake Park, FL', address:'Lake Park, FL 33403' },
+  { city:'Greenacres', label:'Greenacres, FL', address:'Greenacres, FL 33413' },
+  // ─── MINAS / CANTERAS PALM BEACH ───
+  { city:'Palm Beach Aggregates', label:'⛏ Palm Beach Aggregates', address:'8655 Southern Blvd, West Palm Beach, FL 33411' },
+  { city:'Ranger Construction PB', label:'⛏ Ranger Construction', address:'4401 Haverhill Rd N, West Palm Beach, FL 33417' },
+  { city:'Martin Marietta Wellington', label:'⛏ Martin Marietta – Wellington', address:'13001 Indian Mound Rd, Wellington, FL 33449' },
+  { city:'Vulcan Loxahatchee', label:'⛏ Vulcan Materials – Loxahatchee', address:'17905 Southern Blvd, Loxahatchee, FL 33470' },
+  { city:'Palm Beach Rock & Sand', label:'⛏ Palm Beach Rock & Sand', address:'5300 45th St, West Palm Beach, FL 33407' },
+  { city:'Preferred Materials Delray', label:'⛏ Preferred Materials – Delray', address:'14205 Military Trl, Delray Beach, FL 33484' },
+  // ─── BROWARD COUNTY ───
+  { city:'Fort Lauderdale', label:'Fort Lauderdale, FL', address:'Fort Lauderdale, FL 33301' },
+  { city:'Hollywood', label:'Hollywood, FL', address:'Hollywood, FL 33020' },
+  { city:'Pompano Beach', label:'Pompano Beach, FL', address:'Pompano Beach, FL 33060' },
+  { city:'Deerfield Beach', label:'Deerfield Beach, FL', address:'Deerfield Beach, FL 33441' },
+  { city:'Coral Springs', label:'Coral Springs, FL', address:'Coral Springs, FL 33065' },
+  { city:'Miramar', label:'Miramar, FL', address:'Miramar, FL 33025' },
+  { city:'Pembroke Pines', label:'Pembroke Pines, FL', address:'Pembroke Pines, FL 33024' },
+  { city:'Davie', label:'Davie, FL', address:'Davie, FL 33314' },
+  { city:'Plantation', label:'Plantation, FL', address:'Plantation, FL 33317' },
+  // ─── MINAS BROWARD ───
+  { city:'Martin Marietta Deerfield', label:'⛏ Martin Marietta – Deerfield', address:'600 S Powerline Rd, Deerfield Beach, FL 33442' },
+  { city:'Ranger Construction Pompano', label:'⛏ Ranger Construction – Pompano', address:'3701 N Dixie Hwy, Pompano Beach, FL 33064' },
+  // ─── MIAMI-DADE COUNTY ───
+  { city:'Miami', label:'Miami, FL', address:'Miami, FL 33101' },
+  { city:'Hialeah', label:'Hialeah, FL', address:'Hialeah, FL 33010' },
+  { city:'Homestead', label:'Homestead, FL', address:'Homestead, FL 33030' },
+  { city:'Medley', label:'Medley, FL', address:'Medley, FL 33166' },
+  { city:'Doral', label:'Doral, FL', address:'Doral, FL 33172' },
+  { city:'Kendall', label:'Kendall, FL', address:'Kendall, FL 33183' },
+  { city:'Miami Gardens', label:'Miami Gardens, FL', address:'Miami Gardens, FL 33169' },
+  { city:'North Miami', label:'North Miami, FL', address:'North Miami, FL 33161' },
+  { city:'Opa-locka', label:'Opa-locka, FL', address:'Opa-locka, FL 33054' },
+  { city:'Cutler Bay', label:'Cutler Bay, FL', address:'Cutler Bay, FL 33189' },
+  // ─── MINAS MIAMI-DADE ───
+  { city:'Vulcan Medley', label:'⛏ Vulcan Materials – Medley', address:'8400 NW 25th St, Medley, FL 33122' },
+  { city:'CEMEX Homestead', label:'⛏ CEMEX – Homestead', address:'34800 SW 196th Ave, Homestead, FL 33034' },
+  { city:'Tarmac Medley', label:'⛏ Tarmac America – Medley', address:'10600 NW 138th St, Medley, FL 33018' },
+  { city:'Miami Quarry Krome', label:'⛏ Miami Quarry – Krome Ave', address:'28600 SW 162nd Ave, Miami, FL 33030' },
+  // ─── MARTIN / ST LUCIE ───
+  { city:'Stuart', label:'Stuart, FL', address:'Stuart, FL 33994' },
+  { city:'Port St Lucie', label:'Port St Lucie, FL', address:'Port St Lucie, FL 34952' },
+  { city:'Fort Pierce', label:'Fort Pierce, FL', address:'Fort Pierce, FL 34950' },
+  { city:'Hobe Sound', label:'Hobe Sound, FL', address:'Hobe Sound, FL 33455' },
+  // ─── OTROS ───
+  { city:'Okeechobee', label:'Okeechobee, FL', address:'Okeechobee, FL 34972' },
+  { city:'Immokalee', label:'Immokalee, FL', address:'Immokalee, FL 34142' },
+  { city:'LaBelle', label:'LaBelle, FL', address:'LaBelle, FL 33935' },
+  { city:'Clewiston', label:'Clewiston, FL', address:'Clewiston, FL 33440' },
+  { city:'Moore Haven', label:'Moore Haven, FL', address:'Moore Haven, FL 33471' },
+];
+
+// Llena los selects de ciudad (from/to) en tickets y facturas
+function populateCitySelects() {
+  const IDS = ['t_fromCity','t_toCity','fi_fromCity','fi_toCity'];
+  IDS.forEach(id => {
+    const sel = document.getElementById(id);
+    if (!sel) return;
+    const cur = sel.value;
+    const normalCities = FL_CITIES.filter(c => !c.label.startsWith('\u26cf'));
+    const minas = FL_CITIES.filter(c => c.label.startsWith('\u26cf'));
+    sel.innerHTML = '<option value="">📍 Ciudad...</option>';
+    const grpC = document.createElement('optgroup');
+    grpC.label = '── Ciudades Florida ──';
+    normalCities.forEach(c => { const o = document.createElement('option'); o.value = c.city; o.textContent = c.label; grpC.appendChild(o); });
+    sel.appendChild(grpC);
+    const grpM = document.createElement('optgroup');
+    grpM.label = '── Minas & Canteras ──';
+    minas.forEach(c => { const o = document.createElement('option'); o.value = c.city; o.textContent = c.label; grpM.appendChild(o); });
+    sel.appendChild(grpM);
+    sel.value = cur;
+  });
+}
+
+function autofillCity(inputId, selectId) {
+  const sel = document.getElementById(selectId);
+  const inp = document.getElementById(inputId);
+  if (!sel || !inp || !sel.value) return;
+  const found = FL_CITIES.find(c => c.city === sel.value);
+  if (found) {
+    inp.value = found.address;
+    inp.style.borderColor = 'rgba(76,175,125,.6)';
+    setTimeout(() => inp.style.borderColor = '', 1200);
+  }
+}
+
+// ── AUTOCOMPLETADO DE ESCRITURA LIBRE ──
+function hideAC(acId) {
+  const el = document.getElementById(acId);
+  if (el) el.classList.remove('open');
+}
+
+function addrAutocomplete(inp, acId) {
+  const ac = document.getElementById(acId);
+  if (!ac) return;
+  const q = inp.value.toLowerCase().trim();
+  if (!q || q.length < 2) { ac.classList.remove('open'); return; }
+  const matches = FL_CITIES.filter(c =>
+    c.label.toLowerCase().includes(q) ||
+    c.city.toLowerCase().includes(q) ||
+    c.address.toLowerCase().includes(q)
+  ).slice(0, 10);
+  if (!matches.length) { ac.classList.remove('open'); return; }
+  const isMina = c => c.label.startsWith('⛏');
+  ac.innerHTML = matches.map(c => `
+    <div class="addr-ac-item" onclick="selectAddr(${JSON.stringify(inp.id)},${JSON.stringify(acId)},${JSON.stringify(c.address)},${JSON.stringify(c.city)},this)">
+      <div class="addr-ac-city">${c.label.replace('⛏ ','')}</div>
+      <div class="addr-ac-addr">${c.address}${isMina(c) ? '<span class="addr-ac-tag">⛏ MINA</span>':''}</div>
+    </div>`).join('');
+  ac.classList.add('open');
+}
+
+function selectAddr(inputId, acId, address, city, el) {
+  const inp = document.getElementById(inputId);
+  if (inp) {
+    inp.value = address;
+    inp.style.borderColor = 'rgba(76,175,125,.6)';
+    setTimeout(() => inp.style.borderColor = '', 1200);
+  }
+  // Si hay un select de ciudad asociado, sincronizarlo
+  const citySelId = inputId.replace('_from','_fromCity').replace('_to','_toCity');
+  const citySel = document.getElementById(citySelId);
+  if (citySel) citySel.value = city;
+  hideAC(acId);
+}
+
 
 // ════════════════════════════════════════════════
 //  TRUCKS
@@ -4419,6 +4663,15 @@ function selectTicketSuggestion(ticketId) {
   if (t.total && !document.getElementById('ew_total').value) document.getElementById('ew_total').value = parseFloat(t.total).toFixed(2);
   if (t.loads && !document.getElementById('ew_qty').value) document.getElementById('ew_qty').value = t.loads;
   if (t.discountType==='pct' && t.discount && !document.getElementById('ew_brokerPct').value) document.getElementById('ew_brokerPct').value = t.discount;
+  // Autocompletar from/to/material/driver
+  const ewFrom = document.getElementById('ew_from');
+  const ewTo   = document.getElementById('ew_to');
+  const ewMat  = document.getElementById('ew_material');
+  const ewDrv  = document.getElementById('ew_driver');
+  if (ewFrom && t.from && !ewFrom.value) ewFrom.value = t.from;
+  if (ewTo   && t.to   && !ewTo.value)   ewTo.value   = t.to;
+  if (ewMat  && t.material && !ewMat.value) ewMat.value = t.material;
+  if (ewDrv  && t.driverId  && !ewDrv.value) ewDrv.value = t.driverId;
   autoCalcQuickNet();
   if (t.brokerId && !document.getElementById('ew_broker').value)
     document.getElementById('ew_broker').value = t.brokerId;
@@ -4430,23 +4683,30 @@ function selectTicketSuggestion(ticketId) {
 }
 
 function addEarningEntry() {
-  const brokerId = document.getElementById('ew_broker').value;
-  const date     = document.getElementById('ew_date').value;
-  const ticketNum= document.getElementById('ew_ticketNum').value.trim();
-  const truckId  = document.getElementById('ew_truck').value;
-  const truckObj = DB.trucks.find(t=>t.id===truckId);
-  const truckNum = (truckObj && truckObj.num) || '';
-  const qty      = parseFloat(document.getElementById('ew_qty').value) || 0;
-  const price    = parseFloat(document.getElementById('ew_price').value) || 0;
-  const totalVal = parseFloat(document.getElementById('ew_total').value) || price;
-  const brokerPct= parseFloat(document.getElementById('ew_brokerPct').value) || 0;
-  const netPrice = totalVal - (totalVal * brokerPct / 100);
+  const brokerId  = document.getElementById('ew_broker').value;
+  const date      = document.getElementById('ew_date').value;
+  const ticketNum = document.getElementById('ew_ticketNum').value.trim();
+  const truckId   = document.getElementById('ew_truck').value;
+  const truckObj  = DB.trucks.find(t=>t.id===truckId);
+  const truckNum  = (truckObj && truckObj.num) || '';
+  const qty       = parseFloat(document.getElementById('ew_qty').value) || 0;
+  const price     = parseFloat(document.getElementById('ew_price').value) || 0;
+  const totalVal  = parseFloat(document.getElementById('ew_total').value) || price;
+  const brokerPct = parseFloat(document.getElementById('ew_brokerPct').value) || 0;
+  const netPrice  = totalVal - (totalVal * brokerPct / 100);
+  // Nuevos campos
+  const fromAddr  = (document.getElementById('ew_from')?.value||'').trim();
+  const toAddr    = (document.getElementById('ew_to')?.value||'').trim();
+  const material  = document.getElementById('ew_material')?.value || '';
+  const driverId  = document.getElementById('ew_driver')?.value || '';
+  const driverObj = DB.drivers.find(d=>d.id===driverId);
+  const driverName= driverObj ? `${driverObj.first} ${driverObj.last}` : '';
 
   if (!date || !ticketNum || totalVal <= 0) {
     toast('⚠ Fecha, No. Ticket y Total son requeridos', true); return;
   }
 
-  // Check for duplicate ticket in same week
+  // Check duplicate in same week
   const wEntries = DB.earnings.filter(e => isInWeek(e.date, ewOffset));
   if (wEntries.find(e => e.ticketNum.toLowerCase() === ticketNum.toLowerCase())) {
     toast('⚠ Ticket ' + ticketNum + ' ya registrado esta semana', true); return;
@@ -4455,31 +4715,84 @@ function addEarningEntry() {
   const broker = DB.brokers.find(b => b.id === brokerId);
   const brokerName = brokerId === '_none' ? 'Sin Broker' : (broker ? broker.name : 'Sin Broker');
 
+  const entryId = uid();
+
   const entry = {
-    id: uid(),
+    id: entryId,
     brokerId: brokerId || '_none',
-    brokerName,
-    date, ticketNum, truckId, truckNum, qty, unitPrice: price, total: totalVal, brokerPct, price: netPrice,
+    brokerName, date, ticketNum, truckId, truckNum,
+    driverId, driverName, from: fromAddr, to: toAddr, material,
+    qty, unitPrice: price, total: totalVal, brokerPct, price: netPrice,
   };
 
   DB.earnings.push(entry);
   localStorage.setItem('dt_earnings', JSON.stringify(DB.earnings));
   if (_sbClient) sbUpsert('earnings', entry);
+
+  // ─── SYNC a DB.tickets (base unificada) ───
+  // Buscar si ya existe un ticket con este número en la semana actual
+  const existingTicket = DB.tickets.find(t => t.num === ticketNum && isInWeek(t.date, ewOffset));
+  if (existingTicket) {
+    // Actualizar datos del ticket existente con la nueva info
+    existingTicket.from       = fromAddr || existingTicket.from;
+    existingTicket.to         = toAddr   || existingTicket.to;
+    existingTicket.material   = material || existingTicket.material;
+    existingTicket.driverId   = driverId || existingTicket.driverId;
+    existingTicket.driverName = driverName || existingTicket.driverName;
+    existingTicket.truckId    = truckId  || existingTicket.truckId;
+    existingTicket.truckNum   = truckNum || existingTicket.truckNum;
+    existingTicket.total      = totalVal.toFixed(2);
+    existingTicket.net        = netPrice.toFixed(2);
+    existingTicket.hasDiscount   = brokerPct > 0;
+    existingTicket.discountVal   = brokerPct || '';
+    existingTicket.discountAmt   = (totalVal * brokerPct / 100).toFixed(2);
+    existingTicket._fromQuick    = true;
+    save('tickets');
+  } else {
+    const hasDiscount = brokerPct > 0;
+    const discountAmt = hasDiscount ? (totalVal * brokerPct / 100) : 0;
+    const ticketRecord = {
+      id: entryId + '_tk',
+      num: ticketNum, date,
+      driverId, driverName,
+      truckId, truckNum,
+      brokerId: brokerId || '',
+      brokerName,
+      from: fromAddr, to: toAddr, material,
+      loads: qty, tons: '',
+      rate: price, rateType: 'load',
+      total: totalVal.toFixed(2),
+      hasDiscount,
+      discountType: 'pct',
+      discountVal: brokerPct || '',
+      discountAmt: discountAmt.toFixed(2),
+      net: netPrice.toFixed(2),
+      notes: 'Ingresado desde Ticket Rápido',
+      _fromQuick: true,
+    };
+    DB.tickets.push(ticketRecord);
+    save('tickets');
+  }
+
   toast('✓ ' + ticketNum + ' — NET ' + fmtAmt(netPrice));
 
-  // Clear entry fields (keep broker & date)
+  // Limpiar campos (mantener broker, fecha y driver)
   document.getElementById('ew_ticketNum').value = '';
   document.getElementById('ew_truck').value = '';
   document.getElementById('ew_qty').value = '';
   document.getElementById('ew_price').value = '';
   document.getElementById('ew_total').value = '';
   document.getElementById('ew_brokerPct').value = '';
+  if(document.getElementById('ew_from')) document.getElementById('ew_from').value = '';
+  if(document.getElementById('ew_to'))   document.getElementById('ew_to').value   = '';
+  if(document.getElementById('ew_material')) document.getElementById('ew_material').value = '';
   autoCalcQuickNet();
   document.getElementById('ew_ticketHint').style.display = 'none';
   document.getElementById('ew_autocomplete').style.display = 'none';
   document.getElementById('ew_ticketNum').focus();
 
   renderEarnings();
+  renderTickets();
 }
 
 function deleteEarning(id) {
@@ -6374,10 +6687,23 @@ function updateAlertDot() {
 // ════════════════════════════════════════════════
 function renderAll() {
   populateSelects();
+  populateCitySelects();
   populateEarningsBrokers();
   populateEarningsTrucks();
   populateExpenseTrucks();
   populateAIBrokers();
+  // Populate quick entry driver select
+  const ewDrv = document.getElementById('ew_driver');
+  if (ewDrv) {
+    const cv = ewDrv.value;
+    ewDrv.innerHTML = '<option value="">-- Chofer --</option>';
+    DB.drivers.filter(d => d.status === 'active').forEach(d => {
+      const o = document.createElement('option');
+      o.value = d.id; o.textContent = `${d.first} ${d.last}`;
+      ewDrv.appendChild(o);
+    });
+    ewDrv.value = cv;
+  }
   renderTickets();
   renderFacturas();
   renderTrucks();
@@ -6399,6 +6725,7 @@ updateWeekUI();
 updateWeekE();
 updateWeekUIFacturas();
 clUpdateWeekUI();
+populateCitySelects();
 document.getElementById('t_date').value = new Date().toISOString().split('T')[0];
 document.getElementById('fi_date').value = new Date().toISOString().split('T')[0];
 document.getElementById('ew_date').value = new Date().toISOString().split('T')[0];
