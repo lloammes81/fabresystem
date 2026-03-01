@@ -457,6 +457,22 @@ body.app-locked{overflow:hidden;}
   .earnings-hero, .earnings-footer { border-radius: 0 !important; }
 }
 
+/* ── PAGOS — TYPE BUTTONS ── */
+.pg-type-btn{
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  padding:8px 6px;border:1px solid var(--border);border-radius:3px;
+  cursor:pointer;font-size:0.72rem;font-family:'IBM Plex Mono',monospace;
+  text-transform:uppercase;letter-spacing:1px;transition:all .15s;
+  user-select:none;color:var(--muted);text-align:center;
+}
+.pg-type-btn:hover{border-color:var(--danger);color:var(--text);}
+.pg-type-btn input[type=radio]{display:none;}
+.pg-type-btn:has(input:checked){
+  background:rgba(224,82,82,.12);border-color:var(--danger);
+  color:var(--danger);font-weight:700;
+}
+.pg-type-btn span:first-of-type{font-size:1.2rem;}
+
 /* ── ADDRESS AUTOCOMPLETE ── */
 .addr-ac{
   position:absolute;top:100%;left:0;right:0;z-index:900;
@@ -1008,6 +1024,9 @@ input,select,textarea,button{
       </div>
     </div>
     <button class="nav-btn" onclick="showPage('earnings',this)" id="earningsNavBtn">💰 Ganancias</button>
+    <button class="nav-btn" onclick="showPage('pagos',this)" id="pagosNavBtn" style="position:relative">
+      💳 Pagos <span id="pagosNavBadge" style="display:none;position:absolute;top:4px;right:4px;width:8px;height:8px;border-radius:50%;background:var(--danger)"></span>
+    </button>
     <button class="nav-btn" onclick="showPage('closing',this)" id="closingNavBtn">🔒 Cierre</button>
     <button class="nav-btn" onclick="showPage('expenses',this)" id="expensesNavBtn">📉 Gastos</button>
     <button class="nav-btn" onclick="showPage('alerts',this)" id="alertsNavBtn" style="position:relative">
@@ -1869,7 +1888,7 @@ input,select,textarea,button{
   <!-- HERO totals -->
   <div class="earnings-hero" id="ew_hero">
     <div>
-      <div class="hero-label">Ganancias Estimadas</div>
+      <div class="hero-label">Ganancias Netas</div>
       <div class="hero-amount" id="ew_heroTotal">$0.00</div>
       <div class="hero-sub" id="ew_heroSub">0 tickets · 0 brokers</div>
       <div class="progress-bar-wrap" style="width:280px;margin-top:10px">
@@ -1883,87 +1902,9 @@ input,select,textarea,button{
     <div class="hero-divider"></div>
     <div class="hero-stat"><div class="hero-stat-val" id="ew_heroBrokers">0</div><div class="hero-stat-lbl">Brokers</div></div>
     <div class="hero-divider"></div>
+    <div class="hero-stat"><div class="hero-stat-val" id="ew_heroPagos" style="color:var(--danger)">$0</div><div class="hero-stat-lbl" style="color:var(--danger)">Pagos</div></div>
+    <div class="hero-divider"></div>
     <div class="hero-stat"><div class="hero-stat-val" id="ew_heroAvg" style="font-size:1.5rem">$0</div><div class="hero-stat-lbl">Promedio/Ticket</div></div>
-  </div>
-
-  <!-- QUICK ENTRY FORM -->
-  <div class="qentry-panel">
-    <div class="qentry-title">
-      <span style="font-size:1rem">➕</span> REGISTRAR TICKET RÁPIDO
-      <span style="font-size:0.65rem;color:var(--muted);font-family:'IBM Plex Mono',monospace;font-weight:normal;letter-spacing:1px;margin-left:4px">— campos compartidos con Tickets</span>
-    </div>
-    <div class="qentry-grid">
-      <div class="form-group">
-        <label>Broker *</label>
-        <select id="ew_broker" onchange="autoCalcQuickTotal()"><option value="">-- Broker --</option></select>
-      </div>
-      <div class="form-group">
-        <label>Fecha *</label>
-        <input type="date" id="ew_date"/>
-      </div>
-      <div class="form-group">
-        <label>No. Ticket *</label>
-        <input type="text" id="ew_ticketNum" placeholder="T-001" oninput="autoFillTruckFromTicket()" autocomplete="off"/>
-        <div id="ew_ticketHint" style="display:none" class="autofill-indicator">✓ Ticket encontrado</div>
-      </div>
-      <div class="form-group">
-        <label>🚛 Camión #</label>
-        <select id="ew_truck" onchange="syncQuickTruckNum()"><option value="">-- Camión --</option></select>
-      </div>
-      <div class="form-group">
-        <label>Cant.</label>
-        <input type="number" id="ew_qty" placeholder="1" min="0" step="0.01" oninput="autoCalcQuickTotal()"/>
-      </div>
-      <div class="form-group">
-        <label>Precio</label>
-        <input type="number" id="ew_price" placeholder="$0.00" min="0" step="0.01" oninput="autoCalcQuickTotal()" onkeydown="if(event.key==='Enter')addEarningEntry()"/>
-      </div>
-      <div class="form-group">
-        <label>Total</label>
-        <input type="number" id="ew_total" placeholder="$0.00" min="0" step="0.01" oninput="autoCalcQuickNet()"/>
-      </div>
-      <div class="form-group">
-        <label>% Broker</label>
-        <input type="number" id="ew_brokerPct" placeholder="0" min="0" max="100" step="0.01" oninput="autoCalcQuickNet()"/>
-        <div id="ew_netPreview" class="autofill-indicator" style="display:flex;margin-top:4px">NET: $0.00</div>
-      </div>
-      <button class="btn-add-entry" onclick="addEarningEntry()">+ AGREGAR</button>
-    </div>
-    <!-- Fila 2: Ruta + Material + Chofer -->
-    <div class="qentry-row2" style="margin-top:10px">
-      <div style="display:grid;grid-template-columns:1fr 16px 1fr;gap:6px;align-items:center">
-        <div class="form-group" style="margin-bottom:0;position:relative">
-          <label>🔴 Desde (Pickup)</label>
-          <input type="text" id="ew_from" placeholder="Ciudad o dirección de origen" autocomplete="off"
-            oninput="addrAutocomplete(this,'ew_from_ac')" onfocus="addrAutocomplete(this,'ew_from_ac')" onblur="setTimeout(()=>hideAC('ew_from_ac'),200)"/>
-          <div id="ew_from_ac" class="addr-ac"></div>
-        </div>
-        <div style="text-align:center;font-family:'IBM Plex Mono',monospace;font-size:0.6rem;color:var(--accent);margin-top:18px">▶</div>
-        <div class="form-group" style="margin-bottom:0;position:relative">
-          <label>🟢 Hasta (Delivery)</label>
-          <input type="text" id="ew_to" placeholder="Ciudad o dirección de destino" autocomplete="off"
-            oninput="addrAutocomplete(this,'ew_to_ac')" onfocus="addrAutocomplete(this,'ew_to_ac')" onblur="setTimeout(()=>hideAC('ew_to_ac'),200)"/>
-          <div id="ew_to_ac" class="addr-ac"></div>
-        </div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        <div class="form-group" style="margin-bottom:0">
-          <label>Material</label>
-          <select id="ew_material">
-            <option value="">-- Material --</option>
-            <option>Dirt</option><option>Gravel</option><option>Sand</option>
-            <option>Concrete</option><option>Asphalt</option><option>Debris</option>
-            <option>Fill</option><option>Stone</option><option>Other</option>
-          </select>
-        </div>
-        <div class="form-group" style="margin-bottom:0">
-          <label>👤 Chofer</label>
-          <select id="ew_driver"><option value="">-- Chofer --</option></select>
-        </div>
-      </div>
-    </div>
-    <!-- Autocomplete dropdown -->
-    <div id="ew_autocomplete" style="display:none;background:var(--surface2);border:1px solid var(--border);border-top:none;border-radius:0 0 3px 3px;max-height:180px;overflow-y:auto;position:relative;z-index:10;margin-top:-1px;"></div>
   </div>
 
   <!-- BROKER SECTIONS -->
@@ -1984,6 +1925,192 @@ input,select,textarea,button{
     </div>
   </div>
 
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     PAGE: PAGOS — Registro de Pagos
+═══════════════════════════════════════════════════════ -->
+<div class="page" id="page-pagos">
+<div class="container">
+  <div class="print-company-header" style="display:none">
+    <div class="pch-info">
+      <div class="pch-name" id="prt_pagos_name">DUMPTRACK PRO</div>
+      <div class="pch-sub" id="prt_pagos_sub"></div>
+    </div>
+    <div class="pch-right"><strong>REGISTRO DE PAGOS</strong><br><span id="prt_pagos_week"></span></div>
+  </div>
+
+  <!-- Week nav -->
+  <div class="week-nav">
+    <button class="btn-wk" onclick="changePagosWeek(-1)">◀</button>
+    <div class="week-info" id="pg_weekLabel">—</div>
+    <button class="btn-wk" onclick="changePagosWeek(1)">▶</button>
+    <h2 id="pg_weekTitle">SEMANA</h2>
+    <button class="btn-wk" onclick="goToCurrentPagosWeek()" style="margin-left:8px;border-color:var(--success);color:var(--success)">HOY</button>
+    <div style="margin-left:auto;display:flex;gap:8px">
+      <button class="btn btn-outline btn-sm" onclick="printPage('pagos')">🖨 Imprimir</button>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-grid" style="grid-template-columns:repeat(5,1fr)">
+    <div class="stat-card" style="border-left-color:var(--danger)">
+      <div class="stat-label">Total Pagado</div>
+      <div class="stat-value" id="pg_statTotal" style="color:var(--danger)">$0.00</div>
+      <div class="stat-sub">Esta semana</div>
+    </div>
+    <div class="stat-card" style="border-left-color:var(--info)">
+      <div class="stat-label">Choferes</div>
+      <div class="stat-value" id="pg_statChoferes" style="color:var(--info)">$0</div>
+      <div class="stat-sub">Pagos a choferes</div>
+    </div>
+    <div class="stat-card" style="border-left-color:var(--accent)">
+      <div class="stat-label">Mecánicos</div>
+      <div class="stat-value" id="pg_statMecanicos" style="color:var(--accent)">$0</div>
+      <div class="stat-sub">Pagos mecánicos</div>
+    </div>
+    <div class="stat-card" style="border-left-color:var(--purple)">
+      <div class="stat-label">Clientes</div>
+      <div class="stat-value" id="pg_statClientes" style="color:var(--purple)">$0</div>
+      <div class="stat-sub">Reembolsos / abonos</div>
+    </div>
+    <div class="stat-card" style="border-left-color:var(--success)">
+      <div class="stat-label">Ganancias Restantes</div>
+      <div class="stat-value" id="pg_statNet" style="color:var(--success)">$0.00</div>
+      <div class="stat-sub">Ganancias − Pagos</div>
+    </div>
+  </div>
+
+  <div class="main-grid">
+    <!-- FORM -->
+    <div class="card form-card">
+      <div class="card-header">
+        <div class="accent-dot" style="background:var(--danger)"></div>
+        <h3 id="pg_formTitle">NUEVO PAGO</h3>
+      </div>
+      <div class="card-body">
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Fecha *</label>
+            <input type="date" id="pg_date"/>
+          </div>
+          <div class="form-group">
+            <label>Monto *</label>
+            <input type="number" id="pg_amount" placeholder="$0.00" min="0" step="0.01" style="border-color:rgba(224,82,82,.5)"/>
+          </div>
+        </div>
+
+        <!-- Tipo de pago -->
+        <div class="form-group">
+          <label>Tipo de Pago *</label>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:4px" id="pg_typeGrid">
+            <label class="pg-type-btn" data-type="chofer">
+              <input type="radio" name="pg_type" value="chofer" onchange="onPagoTypeChange()">
+              <span>👤</span><span>Chofer</span>
+            </label>
+            <label class="pg-type-btn" data-type="mecanico">
+              <input type="radio" name="pg_type" value="mecanico" onchange="onPagoTypeChange()">
+              <span>🔧</span><span>Mecánico</span>
+            </label>
+            <label class="pg-type-btn" data-type="cliente">
+              <input type="radio" name="pg_type" value="cliente" onchange="onPagoTypeChange()">
+              <span>🏢</span><span>Cliente</span>
+            </label>
+            <label class="pg-type-btn" data-type="otro">
+              <input type="radio" name="pg_type" value="otro" onchange="onPagoTypeChange()">
+              <span>📋</span><span>Otro</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Beneficiario dinámico -->
+        <div class="form-group" id="pg_beneficiarioWrap">
+          <label>Beneficiario *</label>
+          <div id="pg_beneficiarioInner">
+            <!-- se llena por JS según tipo -->
+            <input type="text" id="pg_nombre" placeholder="Nombre del beneficiario"/>
+          </div>
+        </div>
+
+        <!-- Referencia de ticket -->
+        <div class="form-group">
+          <label>Referencia de Ticket</label>
+          <select id="pg_ticketRef">
+            <option value="">— Sin referencia —</option>
+          </select>
+          <div style="font-size:0.68rem;color:var(--muted);font-family:'IBM Plex Mono',monospace;margin-top:3px">Asociar este pago a un ticket específico</div>
+        </div>
+
+        <!-- Método de pago -->
+        <div class="form-group">
+          <label>Método de Pago</label>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:4px" id="pg_methodGrid">
+            <label class="pg-type-btn" data-method="cash">
+              <input type="radio" name="pg_method" value="cash" checked>
+              <span>💵</span><span>Cash</span>
+            </label>
+            <label class="pg-type-btn" data-method="check">
+              <input type="radio" name="pg_method" value="check">
+              <span>📝</span><span>Check</span>
+            </label>
+            <label class="pg-type-btn" data-method="zelle">
+              <input type="radio" name="pg_method" value="zelle">
+              <span>📲</span><span>Zelle</span>
+            </label>
+            <label class="pg-type-btn" data-method="venmo">
+              <input type="radio" name="pg_method" value="venmo">
+              <span>🅥</span><span>Venmo</span>
+            </label>
+            <label class="pg-type-btn" data-method="transfer">
+              <input type="radio" name="pg_method" value="transfer">
+              <span>🏦</span><span>Transfer</span>
+            </label>
+            <label class="pg-type-btn" data-method="otro">
+              <input type="radio" name="pg_method" value="otro">
+              <span>💳</span><span>Otro</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Notas -->
+        <div class="form-group">
+          <label>Descripción / Notas</label>
+          <textarea id="pg_notes" rows="2" placeholder="Descripción del trabajo, motivo del pago..."></textarea>
+        </div>
+
+        <button class="btn btn-primary" id="pg_submitBtn" onclick="savePago()" style="background:var(--danger);border-color:var(--danger)">REGISTRAR PAGO</button>
+        <button class="btn btn-secondary" id="pg_cancelBtn" style="display:none" onclick="cancelPagoEdit()">CANCELAR</button>
+      </div>
+    </div>
+
+    <!-- TABLE -->
+    <div class="card">
+      <div class="table-toolbar">
+        <div class="accent-dot" style="width:7px;height:7px;border-radius:50%;background:var(--danger)"></div>
+        <h3>PAGOS DE LA SEMANA</h3>
+        <span class="count-badge" id="pg_countBadge" style="background:var(--danger)">0</span>
+        <input type="text" class="search-input" id="pg_search" placeholder="Buscar..." oninput="renderPagos()"/>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr>
+            <th>Fecha</th>
+            <th>Tipo</th>
+            <th>Beneficiario</th>
+            <th>Ticket Ref.</th>
+            <th>Método</th>
+            <th style="text-align:right">Monto</th>
+            <th>Notas</th>
+            <th></th>
+          </tr></thead>
+          <tbody id="pg_tbody"></tbody>
+          <tfoot id="pg_tfoot"></tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
 </div>
 </div>
 
@@ -3129,6 +3256,7 @@ const DB = {
   clientes:  JSON.parse(localStorage.getItem('dt_clientes')  || '[]'),
   companies: JSON.parse(localStorage.getItem('dt_companies') || '[]'),
   brokers:   JSON.parse(localStorage.getItem('dt_brokers')   || '[]'),
+  pagos:     JSON.parse(localStorage.getItem('dt_pagos')     || '[]'),
   users:     JSON.parse(localStorage.getItem('dt_users')     || '[]'),
 };
 // Save to localStorage AND fire async upsert to Supabase for every record
@@ -3163,6 +3291,9 @@ function showPage(page, el) {
   } else if (page === 'earnings') {
     document.getElementById('earningsNavBtn').classList.add('active');
     renderEarnings();
+  } else if (page === 'pagos') {
+    document.getElementById('pagosNavBtn').classList.add('active');
+    renderPagos();
   } else if (page === 'closing') {
     document.getElementById('closingNavBtn').classList.add('active');
     renderClosing();
@@ -4184,6 +4315,201 @@ function selectAddr(inputId, acId, address, city, el) {
 
 
 // ════════════════════════════════════════════════
+//  PAGOS
+// ════════════════════════════════════════════════
+let pg_weekOffset = 0;
+let pg_editId     = null;
+
+function updatePagosWeekUI() {
+  const {mon, sun} = getWeekRange(pg_weekOffset);
+  const fmt = d => d.toLocaleDateString('es-US',{month:'short',day:'numeric'});
+  document.getElementById('pg_weekLabel').textContent  = `${fmt(mon)} — ${fmt(sun)}`;
+  document.getElementById('pg_weekTitle').textContent  = pg_weekOffset === 0 ? 'SEMANA ACTUAL' : pg_weekOffset < 0 ? `HACE ${Math.abs(pg_weekOffset)} SEMANA${Math.abs(pg_weekOffset)>1?'S':''}` : `EN ${pg_weekOffset} SEMANA${pg_weekOffset>1?'S':''}`;
+}
+function changePagosWeek(d)   { pg_weekOffset += d; updatePagosWeekUI(); renderPagos(); }
+function goToCurrentPagosWeek() { pg_weekOffset = 0; updatePagosWeekUI(); renderPagos(); }
+
+// Colores por tipo
+const PAGO_TIPO = {
+  chofer:   { label:'Chofer',    icon:'👤', color:'var(--info)' },
+  mecanico: { label:'Mecánico',  icon:'🔧', color:'var(--accent)' },
+  cliente:  { label:'Cliente',   icon:'🏢', color:'var(--purple)' },
+  otro:     { label:'Otro',      icon:'📋', color:'var(--muted)' },
+};
+const METODO_LABEL = { cash:'💵 Cash', check:'📝 Check', zelle:'📲 Zelle', venmo:'🅥 Venmo', transfer:'🏦 Transfer', otro:'💳 Otro' };
+
+function onPagoTypeChange() {
+  const tipo = document.querySelector('input[name="pg_type"]:checked')?.value || '';
+  const inner = document.getElementById('pg_beneficiarioInner');
+  if (tipo === 'chofer') {
+    inner.innerHTML = `<select id="pg_nombre"><option value="">— Seleccionar chofer —</option>${DB.drivers.filter(d=>d.status==='active').map(d=>`<option value="${d.first} ${d.last}">${d.first} ${d.last}</option>`).join('')}</select>`;
+  } else if (tipo === 'cliente') {
+    inner.innerHTML = `<select id="pg_nombre"><option value="">— Seleccionar cliente —</option>${DB.clientes.filter(c=>c.status==='active').map(c=>`<option value="${c.first} ${c.last}${c.company?' — '+c.company:''}">${c.first} ${c.last}${c.company?' — '+c.company:''}</option>`).join('')}</select>`;
+  } else {
+    inner.innerHTML = `<input type="text" id="pg_nombre" placeholder="${tipo==='mecanico'?'Nombre del mecánico':'Descripción del beneficiario'}"/>`;
+  }
+  populatePagoTicketRef();
+}
+
+function populatePagoTicketRef() {
+  const sel = document.getElementById('pg_ticketRef'); if(!sel) return;
+  const prev = sel.value;
+  const wTickets = DB.tickets.filter(t => isInWeek(t.date, pg_weekOffset)).sort((a,b)=>a.num.localeCompare(b.num));
+  sel.innerHTML = '<option value="">— Sin referencia —</option>' +
+    wTickets.map(t => `<option value="${t.num}">${t.num}  ·  ${fmtDate(t.date)}  ·  ${t.driverName||t.brokerName||''}  ·  ${t.net?fmtAmt(t.net):''}</option>`).join('');
+  sel.value = prev;
+}
+
+function savePago() {
+  const date   = document.getElementById('pg_date').value;
+  const amount = parseFloat(document.getElementById('pg_amount').value) || 0;
+  const tipo   = document.querySelector('input[name="pg_type"]:checked')?.value || '';
+  const nombre = document.getElementById('pg_nombre')?.value?.trim() || '';
+  const metodo = document.querySelector('input[name="pg_method"]:checked')?.value || 'cash';
+
+  if (!date || amount <= 0 || !tipo || !nombre) {
+    toast('⚠ Fecha, Monto, Tipo y Beneficiario son requeridos', true); return;
+  }
+
+  const record = {
+    id:        pg_editId || uid(),
+    date, amount, tipo, nombre, metodo,
+    ticketRef: document.getElementById('pg_ticketRef').value,
+    notes:     document.getElementById('pg_notes').value.trim(),
+  };
+
+  if (pg_editId) {
+    const i = DB.pagos.findIndex(p => p.id === pg_editId);
+    if (i >= 0) DB.pagos[i] = record;
+    toast('✓ Pago actualizado');
+    cancelPagoEdit();
+  } else {
+    DB.pagos.push(record);
+    toast('✓ Pago registrado: ' + PAGO_TIPO[tipo]?.icon + ' ' + fmtAmt(amount));
+    clearPagoForm();
+  }
+  save('pagos');
+  renderPagos();
+  renderEarnings(); // Actualiza el hero de ganancias
+}
+
+function clearPagoForm() {
+  document.getElementById('pg_date').value   = new Date().toISOString().split('T')[0];
+  document.getElementById('pg_amount').value = '';
+  document.getElementById('pg_notes').value  = '';
+  document.querySelector('input[name="pg_type"][value="chofer"]')?.click();
+  document.querySelector('input[name="pg_method"][value="cash"]')?.click();
+  onPagoTypeChange();
+}
+
+function cancelPagoEdit() {
+  pg_editId = null;
+  document.getElementById('pg_formTitle').textContent = 'NUEVO PAGO';
+  document.getElementById('pg_submitBtn').textContent = 'REGISTRAR PAGO';
+  document.getElementById('pg_cancelBtn').style.display = 'none';
+  clearPagoForm();
+}
+
+function editPago(id) {
+  const p = DB.pagos.find(x => x.id === id); if (!p) return;
+  pg_editId = id;
+  document.getElementById('pg_date').value   = p.date;
+  document.getElementById('pg_amount').value = p.amount;
+  document.getElementById('pg_notes').value  = p.notes || '';
+  const rb = document.querySelector(`input[name="pg_type"][value="${p.tipo}"]`);
+  if (rb) { rb.checked = true; onPagoTypeChange(); }
+  setTimeout(() => {
+    const nb = document.getElementById('pg_nombre');
+    if (nb) nb.value = p.nombre;
+    const mb = document.querySelector(`input[name="pg_method"][value="${p.metodo}"]`);
+    if (mb) mb.checked = true;
+    document.getElementById('pg_ticketRef').value = p.ticketRef || '';
+  }, 50);
+  document.getElementById('pg_formTitle').textContent = 'EDITAR PAGO';
+  document.getElementById('pg_submitBtn').textContent = 'ACTUALIZAR PAGO';
+  document.getElementById('pg_cancelBtn').style.display = 'inline-block';
+  document.querySelector('#page-pagos .form-card').scrollIntoView({behavior:'smooth'});
+}
+
+function deletePago(id) {
+  DB.pagos = DB.pagos.filter(p => p.id !== id);
+  save('pagos');
+  renderPagos();
+  renderEarnings();
+  toast('🗑 Pago eliminado');
+}
+
+function renderPagos() {
+  updatePagosWeekUI();
+  populatePagoTicketRef();
+
+  const q = (document.getElementById('pg_search')?.value||'').toLowerCase();
+  const wPagos = DB.pagos.filter(p => isInWeek(p.date, pg_weekOffset));
+  const filtered = wPagos.filter(p => !q ||
+    (p.nombre||'').toLowerCase().includes(q) ||
+    (p.tipo||'').toLowerCase().includes(q) ||
+    (p.metodo||'').toLowerCase().includes(q) ||
+    (p.ticketRef||'').toLowerCase().includes(q) ||
+    (p.notes||'').toLowerCase().includes(q)
+  ).sort((a,b) => a.date.localeCompare(b.date));
+
+  // Stats
+  const totalPagado = wPagos.reduce((s,p) => s + p.amount, 0);
+  const byTipo = tipo => wPagos.filter(p=>p.tipo===tipo).reduce((s,p)=>s+p.amount,0);
+  const wEarnings = DB.earnings.filter(e => isInWeek(e.date, pg_weekOffset));
+  const totalEarnings = wEarnings.reduce((s,e) => s + e.price, 0);
+
+  const el = n => document.getElementById(n);
+  if(el('pg_statTotal'))    el('pg_statTotal').textContent    = fmtAmt(totalPagado);
+  if(el('pg_statChoferes')) el('pg_statChoferes').textContent = fmtAmt(byTipo('chofer'));
+  if(el('pg_statMecanicos'))el('pg_statMecanicos').textContent= fmtAmt(byTipo('mecanico'));
+  if(el('pg_statClientes')) el('pg_statClientes').textContent = fmtAmt(byTipo('cliente'));
+  if(el('pg_statNet'))      el('pg_statNet').textContent      = fmtAmt(Math.max(0, totalEarnings - totalPagado));
+  if(el('pg_countBadge'))   el('pg_countBadge').textContent   = filtered.length;
+
+  // Badge en nav
+  const nb = document.getElementById('pagosNavBadge');
+  if (nb) nb.style.display = wPagos.length ? 'block' : 'none';
+
+  const tbody = document.getElementById('pg_tbody'); if(!tbody) return;
+  if (!filtered.length) {
+    tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><div class="icon">💳</div><p>Sin pagos esta semana</p></div></td></tr>`;
+    document.getElementById('pg_tfoot').innerHTML = '';
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(p => {
+    const ti = PAGO_TIPO[p.tipo] || {label:p.tipo, icon:'📋', color:'var(--muted)'};
+    return `<tr>
+      <td class="mono muted" style="font-size:0.72rem">${fmtDate(p.date)}</td>
+      <td>
+        <span style="display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:2px;font-family:'IBM Plex Mono',monospace;font-size:0.68rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;background:${ti.color}18;color:${ti.color};border:1px solid ${ti.color}40">
+          ${ti.icon} ${ti.label}
+        </span>
+      </td>
+      <td style="font-weight:600">${p.nombre}</td>
+      <td>${p.ticketRef ? `<span class="mono" style="color:var(--accent);font-size:0.78rem">${p.ticketRef}</span>` : '<span style="color:var(--muted)">—</span>'}</td>
+      <td><span class="mono" style="font-size:0.72rem;color:var(--label)">${METODO_LABEL[p.metodo]||p.metodo}</span></td>
+      <td class="mono" style="text-align:right;color:var(--danger);font-weight:700;font-size:0.95rem">${fmtAmt(p.amount)}</td>
+      <td style="font-size:0.75rem;color:var(--muted);max-width:160px">${p.notes||'—'}</td>
+      <td>
+        <div class="actions">
+          <button class="btn-icon btn-edit" onclick="editPago('${p.id}')">✏</button>
+          <button class="btn-icon btn-del"  onclick="deletePago('${p.id}')">🗑</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+
+  const grandTotal = filtered.reduce((s,p) => s+p.amount, 0);
+  document.getElementById('pg_tfoot').innerHTML = `<tr class="totals-row">
+    <td colspan="5" style="text-align:right;font-size:0.65rem;letter-spacing:2px;color:var(--muted)">TOTAL PAGADO</td>
+    <td style="text-align:right;color:var(--danger);font-weight:700">${fmtAmt(grandTotal)}</td>
+    <td colspan="2"></td>
+  </tr>`;
+}
+
+// ════════════════════════════════════════════════
 //  TRUCKS
 // ════════════════════════════════════════════════
 let tk_editId = null;
@@ -4683,8 +5009,8 @@ function selectTicketSuggestion(ticketId) {
 }
 
 function addEarningEntry() {
-  const brokerId  = document.getElementById('ew_broker').value;
-  const date      = document.getElementById('ew_date').value;
+  const brokerId  = document.getElementById('ew_broker')?.value || '';
+  const date      = document.getElementById('ew_date')?.value || new Date().toISOString().split('T')[0];
   const ticketNum = document.getElementById('ew_ticketNum').value.trim();
   const truckId   = document.getElementById('ew_truck').value;
   const truckObj  = DB.trucks.find(t=>t.id===truckId);
@@ -4812,19 +5138,23 @@ function renderEarnings() {
   populateEarningsBrokers();
   populateEarningsTrucks();
 
-  const wEntries = DB.earnings.filter(e => isInWeek(e.date, ewOffset));
-  const total = wEntries.reduce((s,e) => s + e.price, 0);
-  const uniqueTrucks = new Set(wEntries.map(e => e.truckNum).filter(Boolean)).size;
+  const wEntries  = DB.earnings.filter(e => isInWeek(e.date, ewOffset));
+  const wPagos    = DB.pagos.filter(p => isInWeek(p.date, ewOffset));
+  const totalBruto = wEntries.reduce((s,e) => s + e.price, 0);
+  const totalPagos = wPagos.reduce((s,p) => s + p.amount, 0);
+  const totalNeto  = totalBruto - totalPagos;
+  const uniqueTrucks  = new Set(wEntries.map(e => e.truckNum).filter(Boolean)).size;
   const uniqueBrokers = new Set(wEntries.map(e => e.brokerId)).size;
-  const avg = wEntries.length ? total / wEntries.length : 0;
+  const avg = wEntries.length ? totalBruto / wEntries.length : 0;
 
   // Hero
-  document.getElementById('ew_heroTotal').textContent = fmtAmt(total);
-  document.getElementById('ew_heroSub').textContent = `${wEntries.length} tickets · ${uniqueBrokers} broker${uniqueBrokers !== 1 ? 's' : ''}`;
-  document.getElementById('ew_heroCount').textContent = wEntries.length;
+  document.getElementById('ew_heroTotal').textContent  = fmtAmt(totalNeto);
+  document.getElementById('ew_heroSub').textContent    = `${wEntries.length} tickets · ${uniqueBrokers} broker${uniqueBrokers !== 1 ? 's' : ''} · ${wPagos.length} pago${wPagos.length!==1?'s':''}`;
+  document.getElementById('ew_heroCount').textContent  = wEntries.length;
   document.getElementById('ew_heroTrucks').textContent = uniqueTrucks;
-  document.getElementById('ew_heroBrokers').textContent = uniqueBrokers;
-  document.getElementById('ew_heroAvg').textContent = fmtAmt(avg);
+  document.getElementById('ew_heroBrokers').textContent= uniqueBrokers;
+  document.getElementById('ew_heroPagos').textContent  = totalPagos > 0 ? '−' + fmtAmt(totalPagos) : '$0';
+  document.getElementById('ew_heroAvg').textContent    = fmtAmt(avg);
 
   // Group by broker
   const groups = {};
@@ -4835,18 +5165,18 @@ function renderEarnings() {
     groups[key].total += e.price;
   });
 
-  const sorted = Object.entries(groups).sort((a,b) => b[1].total - a[1].total);
+  const sorted  = Object.entries(groups).sort((a,b) => b[1].total - a[1].total);
   const maxTotal = sorted.length ? sorted[0][1].total : 1;
 
   // Footer
   const footer = document.getElementById('ew_footer');
   footer.style.display = wEntries.length ? 'flex' : 'none';
-  document.getElementById('ew_footTotal').textContent = fmtAmt(total);
+  document.getElementById('ew_footTotal').textContent = fmtAmt(totalNeto);
   document.getElementById('ew_footCount').textContent = wEntries.length;
-  document.getElementById('ew_footAvg').textContent = fmtAmt(avg);
-  document.getElementById('ew_footBest').textContent = sorted.length ? sorted[0][1].name : '—';
-  document.getElementById('ew_monthly').textContent = fmtAmt(total * 4);
-  document.getElementById('ew_progressBar').style.width = Math.min(100, (total / Math.max(total * 1.1, 1)) * 100) + '%';
+  document.getElementById('ew_footAvg').textContent   = fmtAmt(avg);
+  document.getElementById('ew_footBest').textContent  = sorted.length ? sorted[0][1].name : '—';
+  document.getElementById('ew_monthly').textContent   = fmtAmt(totalNeto * 4);
+  document.getElementById('ew_progressBar').style.width = Math.min(100, (totalNeto / Math.max(totalNeto * 1.1, 1)) * 100) + '%';
 
   const container = document.getElementById('ew_brokerSections');
 
@@ -4854,7 +5184,7 @@ function renderEarnings() {
     container.innerHTML = `<div style="text-align:center;padding:4rem 2rem;color:var(--muted)">
       <div style="font-size:3rem;margin-bottom:1rem;opacity:.3">💰</div>
       <div style="font-family:'IBM Plex Mono',monospace;font-size:0.72rem;text-transform:uppercase;letter-spacing:2px">Sin entradas esta semana</div>
-      <div style="font-size:0.75rem;margin-top:8px;color:var(--muted)">Usa el formulario de arriba para registrar tus tickets</div>
+      <div style="font-size:0.75rem;margin-top:8px;color:var(--muted)">Registra tickets en la página de <strong>Tickets</strong></div>
     </div>`;
     return;
   }
@@ -6654,7 +6984,7 @@ function confirmResetAllData() {
   const input = prompt('Escribe BORRAR para confirmar:');
   if (input !== 'BORRAR') { toast('Cancelado — datos no borrados'); return; }
   ['dt_tickets','dt_trucks','dt_drivers','dt_brokers','dt_earnings','dt_weekClosings','dt_expenses'].forEach(k => localStorage.removeItem(k));
-  DB.tickets=[]; DB.trucks=[]; DB.drivers=[]; DB.brokers=[]; DB.earnings=[]; DB.weekClosings={}; DB.expenses=[];
+  DB.tickets=[]; DB.trucks=[]; DB.drivers=[]; DB.brokers=[]; DB.earnings=[]; DB.weekClosings={}; DB.expenses=[]; DB.pagos=[];
   renderAll();
   toast('🗑 Todos los datos borrados', true);
 }
@@ -6706,6 +7036,7 @@ function renderAll() {
   }
   renderTickets();
   renderFacturas();
+  renderPagos();
   renderTrucks();
   renderDrivers();
   renderClientes();
@@ -6725,13 +7056,19 @@ updateWeekUI();
 updateWeekE();
 updateWeekUIFacturas();
 clUpdateWeekUI();
+updatePagosWeekUI();
 populateCitySelects();
-document.getElementById('t_date').value = new Date().toISOString().split('T')[0];
-document.getElementById('fi_date').value = new Date().toISOString().split('T')[0];
-document.getElementById('ew_date').value = new Date().toISOString().split('T')[0];
+document.getElementById('t_date').value   = new Date().toISOString().split('T')[0];
+document.getElementById('fi_date').value  = new Date().toISOString().split('T')[0];
+document.getElementById('pg_date').value  = new Date().toISOString().split('T')[0];
 document.getElementById('exp_date').value = new Date().toISOString().split('T')[0];
-document.getElementById('t_num').value = nextTicketNum();
+document.getElementById('t_num').value  = nextTicketNum();
 document.getElementById('fi_num').value = nextFacturaNum();
+// Default pagos type → chofer
+const _defPgType = document.querySelector('input[name="pg_type"][value="chofer"]');
+if (_defPgType) { _defPgType.checked = true; onPagoTypeChange(); }
+const _defPgMeth = document.querySelector('input[name="pg_method"][value="cash"]');
+if (_defPgMeth) _defPgMeth.checked = true;
 
 // Initialize Supabase client from saved config
 initSupabaseClient();
@@ -6870,6 +7207,7 @@ initSupabaseClient();
     tickets:'REPORTE DE TICKETS',
     facturas:'REPORTE DE FACTURAS',
     earnings:'GANANCIAS SEMANALES',
+    pagos:'REGISTRO DE PAGOS',
     closing:'CIERRE DE SEMANA',
     expenses:'REGISTRO DE GASTOS',
     pl:'P&L — PÉRDIDAS Y GANANCIAS',
@@ -6939,7 +7277,7 @@ initSupabaseClient();
 
   // Inject a hidden print-only container in each page that gets filled on print
   function injectPrintContainers(){
-    var pages = ['tickets','facturas','earnings','closing','expenses','pl','brokerreport','trucks','drivers','brokers','clientes','minas','alerts'];
+    var pages = ['tickets','facturas','earnings','pagos','closing','expenses','pl','brokerreport','trucks','drivers','brokers','clientes','minas','alerts'];
     pages.forEach(function(p){
       var pageEl = document.getElementById('page-'+p);
       if(!pageEl) return;
