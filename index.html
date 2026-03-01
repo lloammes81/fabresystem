@@ -978,7 +978,13 @@ input,select,textarea,button{
 <header>
   <div class="logo">🚛 <em>Dump</em>Track</div>
   <nav>
-    <button class="nav-btn active" onclick="showPage('tickets',this)">🎫 Tickets</button>
+    <div class="dropdown" id="dd_tickets">
+      <button class="nav-btn active" id="ticketsBtn" onclick="toggleDropdown('dd_tickets')">🎫 Tickets <span class="dropdown-arrow">▾</span></button>
+      <div class="dropdown-menu">
+        <a onclick="showPage('tickets',this)"><span class="menu-icon">🎫</span> Registro de Tickets</a>
+        <a onclick="showPage('facturas',this)"><span class="menu-icon">🧾</span> Registro de Facturas</a>
+      </div>
+    </div>
     <button class="nav-btn" onclick="showPage('earnings',this)" id="earningsNavBtn">💰 Ganancias</button>
     <button class="nav-btn" onclick="showPage('closing',this)" id="closingNavBtn">🔒 Cierre</button>
     <button class="nav-btn" onclick="showPage('expenses',this)" id="expensesNavBtn">📉 Gastos</button>
@@ -991,6 +997,7 @@ input,select,textarea,button{
       <div class="dropdown-menu">
         <a onclick="showPage('pl',this)"><span class="menu-icon">📈</span> P&L — Pérd. y Ganancias</a>
         <a onclick="showPage('brokerreport',this)"><span class="menu-icon">🤝</span> Reporte por Broker</a>
+        <a onclick="showPage('minas',this)"><span class="menu-icon">⛏️</span> Reporte de Minas</a>
       </div>
     </div>
 
@@ -1008,6 +1015,10 @@ input,select,textarea,button{
         <a onclick="showPage('brokers',this)">
           <span class="menu-icon">🤝</span> Brokers
           <span class="menu-badge" id="brokerMenuBadge">0</span>
+        </a>
+        <a onclick="showPage('clientes',this)">
+          <span class="menu-icon">👥</span> Clientes
+          <span class="menu-badge" id="clienteMenuBadge">0</span>
         </a>
       </div>
     </div>
@@ -1205,6 +1216,151 @@ input,select,textarea,button{
           </tr></thead>
           <tbody id="t_tbody"></tbody>
           <tfoot id="t_tfoot"></tfoot>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     PAGE: FACTURAS
+═══════════════════════════════════════════════════════ -->
+<div class="page" id="page-facturas">
+<div class="container">
+  <div class="print-company-header" style="display:none">
+    <div class="pch-info">
+      <div class="pch-name" id="prt_facturas_name">DUMPTRACK PRO</div>
+      <div class="pch-sub" id="prt_facturas_sub"></div>
+    </div>
+    <div class="pch-right">
+      <strong>REGISTRO DE FACTURAS</strong>
+      <span id="prt_facturas_week"></span><br>
+      <span id="prt_facturas_date"></span>
+    </div>
+  </div>
+
+  <div class="week-nav">
+    <button class="btn-wk" onclick="changeWeekFacturas(-1)">◀</button>
+    <div class="week-info" id="fi_weekLabel">—</div>
+    <button class="btn-wk" onclick="changeWeekFacturas(1)">▶</button>
+    <h2 id="fi_weekTitle">SEMANA</h2>
+    <button class="btn-wk" onclick="goToCurrentWeekFacturas()" style="margin-left:8px;border-color:var(--accent);color:var(--accent)">HOY</button>
+    <div style="margin-left:auto;display:flex;gap:8px;">
+      <button class="btn btn-success-outline btn-sm" onclick="printPage('facturas')">🖨 Imprimir</button>
+      <button class="btn btn-outline btn-sm" onclick="exportCSVFacturas()">⬇ CSV</button>
+    </div>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-label">Facturas</div><div class="stat-value" id="fi_stTickets">0</div><div class="stat-sub">Esta semana</div></div>
+    <div class="stat-card"><div class="stat-label">Cant. Total</div><div class="stat-value" id="fi_stLoads">0</div><div class="stat-sub">Cargas / viajes</div></div>
+    <div class="stat-card" style="border-left-color:var(--success)"><div class="stat-label">Total Bruto $</div><div class="stat-value" id="fi_stTotal" style="color:var(--success);font-size:1.4rem">$0</div><div class="stat-sub">Antes de descuento</div></div>
+    <div class="stat-card" style="border-left-color:var(--danger)"><div class="stat-label">Descuentos $</div><div class="stat-value" id="fi_stDiscount" style="color:var(--danger);font-size:1.4rem">$0</div><div class="stat-sub">Total aplicado</div></div>
+    <div class="stat-card" style="border-left-color:var(--accent);border-width:2px"><div class="stat-label">NET $</div><div class="stat-value" id="fi_stNet" style="color:var(--accent);font-size:1.4rem">$0</div><div class="stat-sub">Total neto factura</div></div>
+  </div>
+
+  <div class="main-grid">
+    <!-- FORM -->
+    <div class="card form-card">
+      <div class="card-header"><div class="accent-dot" style="background:var(--teal)"></div><h3 id="facturaFormTitle">NUEVA FACTURA</h3></div>
+      <div class="card-body">
+
+        <div class="form-row">
+          <div class="form-group"><label>No. Factura *</label><input type="text" id="fi_num" placeholder="F-001"/></div>
+          <div class="form-group"><label>Fecha *</label><input type="date" id="fi_date"/></div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group"><label>Cliente</label>
+            <select id="fi_cliente"><option value="">-- Seleccionar --</option></select>
+          </div>
+          <div class="form-group"><label>👤 Chofer</label>
+            <select id="fi_driver"><option value="">-- Seleccionar --</option></select>
+          </div>
+        </div>
+
+        <div class="form-group"><label>Broker</label>
+          <select id="fi_broker"><option value="">-- Seleccionar --</option></select>
+        </div>
+
+        <div class="form-group"><label>🔴 Desde (Pickup) *</label><input type="text" id="fi_from" placeholder="Dirección de origen"/></div>
+        <div class="route-sep">▼ RUTA</div>
+        <div class="form-group"><label>🟢 Hasta (Delivery) *</label><input type="text" id="fi_to" placeholder="Dirección de destino"/></div>
+
+        <div class="form-group"><label>Material</label>
+          <select id="fi_material">
+            <option value="">-- Seleccionar --</option>
+            <option>Dirt</option><option>Gravel</option><option>Sand</option>
+            <option>Concrete</option><option>Asphalt</option><option>Debris</option>
+            <option>Fill</option><option>Stone</option><option>Other</option>
+          </select>
+        </div>
+
+        <!-- PRICING SECTION -->
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:3px;padding:.85rem 1rem;margin-bottom:1rem">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:0.8rem;letter-spacing:2px;color:var(--label);margin-bottom:.75rem">💲 PRECIO & CANTIDADES</div>
+          <div class="form-row">
+            <div class="form-group" style="margin-bottom:.5rem">
+              <label>Cant. (Loads)</label>
+              <input type="number" id="fi_loads" placeholder="0" min="0" oninput="autoCalcFactura()"/>
+            </div>
+            <div class="form-group" style="margin-bottom:.5rem">
+              <label>Tons</label>
+              <input type="number" id="fi_tons" placeholder="0.00" min="0" step="0.01" oninput="autoCalcFactura()"/>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group" style="margin-bottom:.5rem">
+              <label>Precio / Rate ($)</label>
+              <input type="number" id="fi_rate" placeholder="0.00" min="0" step="0.01" oninput="autoCalcFactura()"/>
+            </div>
+            <div class="form-group" style="margin-bottom:.5rem">
+              <label>Tipo Rate</label>
+              <select id="fi_rateType" onchange="autoCalcFactura()">
+                <option value="ton">Per Ton</option>
+                <option value="load">Per Load</option>
+                <option value="hour">Per Hour</option>
+                <option value="flat">Flat Rate</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-top:.25rem">
+            <div class="form-group" style="margin-bottom:.25rem">
+              <label style="color:var(--success)">Total Bruto $</label>
+              <input type="number" id="fi_total" placeholder="0.00" min="0" step="0.01" oninput="autoCalcNetFactura()" style="border-color:rgba(76,175,125,.4);background:rgba(76,175,125,.05)"/>
+            </div>
+            <div class="form-group" style="margin-bottom:.25rem">
+              <label style="color:var(--teal);font-weight:700">Net $ (Total Factura)</label>
+              <input type="number" id="fi_net" placeholder="0.00" min="0" step="0.01" readonly style="border-color:rgba(76,191,176,.5);background:rgba(76,191,176,.06);color:var(--teal);font-weight:600;cursor:default"/>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group"><label>Notas</label><textarea id="fi_notes" rows="2" placeholder="Observaciones..."></textarea></div>
+
+        <button class="btn btn-primary" id="fi_submitBtn" onclick="saveFactura()" style="background:var(--teal);color:#000">GUARDAR FACTURA</button>
+        <button class="btn btn-secondary" id="fi_cancelBtn" style="display:none" onclick="cancelFacturaEdit()">CANCELAR EDICIÓN</button>
+      </div>
+    </div>
+
+    <!-- TABLE -->
+    <div class="card">
+      <div class="table-toolbar">
+        <div class="accent-dot" style="width:7px;height:7px;border-radius:50%;background:var(--teal)"></div>
+        <h3>FACTURAS DE LA SEMANA</h3>
+        <span class="count-badge" id="fi_countBadge" style="background:var(--teal)">0</span>
+        <input type="text" class="search-input" id="fi_search" placeholder="Buscar..." oninput="renderFacturas()"/>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr>
+            <th>Factura</th><th>Fecha</th><th>Cliente / Chofer</th>
+            <th>Broker</th><th>Material</th><th>Cant</th><th>Precio</th><th>Total $</th><th>NET $</th><th></th>
+          </tr></thead>
+          <tbody id="fi_tbody"></tbody>
+          <tfoot id="fi_tfoot"></tfoot>
         </table>
       </div>
     </div>
@@ -1422,6 +1578,103 @@ input,select,textarea,button{
             <th>Venc. Licencia</th><th>Medical</th><th>Truck</th><th>Pay</th><th>Estado</th><th></th>
           </tr></thead>
           <tbody id="dr_tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     PAGE: CLIENTES
+═══════════════════════════════════════════════════════ -->
+<div class="page" id="page-clientes">
+<div class="container">
+  <div class="print-company-header" style="display:none">
+    <div class="pch-info">
+      <div class="pch-name" id="prt_clientes_name">DUMPTRACK PRO</div>
+      <div class="pch-sub" id="prt_clientes_sub"></div>
+    </div>
+    <div class="pch-right"><strong>REGISTRO DE CLIENTES</strong><br><span id="prt_clientes_date"></span></div>
+  </div>
+  <div class="section-header">
+    <div class="section-icon">👥</div>
+    <div class="section-title"><h1>CLIENTES</h1><p>Registro de clientes</p></div>
+    <div style="margin-left:auto;display:flex;gap:8px">
+      <button class="btn btn-success-outline btn-sm" onclick="printPage('clientes')">🖨 Imprimir</button>
+    </div>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card" style="border-left-color:var(--teal)"><div class="stat-label">Total</div><div class="stat-value" id="cl_statTotal" style="color:var(--teal)">0</div><div class="stat-sub">Clientes registrados</div></div>
+    <div class="stat-card" style="border-left-color:var(--success)"><div class="stat-label">Activos</div><div class="stat-value" id="cl_statActive" style="color:var(--success)">0</div><div class="stat-sub">En servicio</div></div>
+    <div class="stat-card" style="border-left-color:var(--info)"><div class="stat-label">Empresas</div><div class="stat-value" id="cl_statCompanies" style="color:var(--info)">0</div><div class="stat-sub">Con empresa</div></div>
+    <div class="stat-card" style="border-left-color:var(--accent)"><div class="stat-label">Inactivos</div><div class="stat-value" id="cl_statInactive" style="color:var(--accent)">0</div><div class="stat-sub">Sin servicio activo</div></div>
+  </div>
+
+  <div class="main-grid">
+    <div class="card">
+      <div class="card-header"><div class="accent-dot" style="background:var(--teal)"></div><h3 id="clienteFormTitle">NUEVO CLIENTE</h3></div>
+      <div class="card-body">
+        <div class="form-row">
+          <div class="form-group"><label>Nombre *</label><input type="text" id="cl_first" placeholder="First Name"/></div>
+          <div class="form-group"><label>Apellido *</label><input type="text" id="cl_last" placeholder="Last Name"/></div>
+        </div>
+        <div class="form-group"><label>Empresa</label><input type="text" id="cl_company" placeholder="Nombre de la empresa (opcional)"/></div>
+        <div class="form-row">
+          <div class="form-group"><label>Teléfono</label><input type="tel" id="cl_phone" placeholder="(555) 000-0000"/></div>
+          <div class="form-group"><label>Email</label><input type="email" id="cl_email" placeholder="cliente@email.com"/></div>
+        </div>
+        <div class="form-group"><label>Dirección</label><input type="text" id="cl_address" placeholder="Dirección del cliente"/></div>
+        <div class="form-row">
+          <div class="form-group"><label>Ciudad</label><input type="text" id="cl_city" placeholder="Ciudad"/></div>
+          <div class="form-group"><label>Estado</label>
+            <select id="cl_state">
+              <option value="FL">FL</option><option value="TX">TX</option><option value="GA">GA</option>
+              <option value="NC">NC</option><option value="CA">CA</option><option value="NY">NY</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Tax ID / EIN</label><input type="text" id="cl_taxid" placeholder="XX-XXXXXXX"/></div>
+          <div class="form-group"><label>Términos de Pago</label>
+            <select id="cl_payTerms">
+              <option value="immediate">Inmediato</option>
+              <option value="net15">Net 15</option>
+              <option value="net30">Net 30</option>
+              <option value="net45">Net 45</option>
+              <option value="net60">Net 60</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group"><label>Estado</label>
+          <select id="cl_status">
+            <option value="active">✅ Activo</option>
+            <option value="inactive">❌ Inactivo</option>
+            <option value="prospect">🔍 Prospecto</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Notas</label><textarea id="cl_notes" rows="2" placeholder="Observaciones..."></textarea></div>
+        <button class="btn btn-primary" id="cl_submitBtn" onclick="saveCliente()" style="background:var(--teal);color:#000">GUARDAR CLIENTE</button>
+        <button class="btn btn-secondary" id="cl_cancelBtn" style="display:none" onclick="cancelClienteEdit()">CANCELAR EDICIÓN</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="table-toolbar">
+        <div class="accent-dot" style="width:7px;height:7px;border-radius:50%;background:var(--teal)"></div>
+        <h3>CLIENTES</h3>
+        <span class="count-badge" style="background:var(--teal)" id="cl_countBadge">0</span>
+        <input type="text" class="search-input" id="cl_search" placeholder="Buscar..." oninput="renderClientes()"/>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr>
+            <th>Nombre</th><th>Empresa</th><th>Teléfono</th><th>Email</th>
+            <th>Ciudad</th><th>Términos</th><th>Estado</th><th></th>
+          </tr></thead>
+          <tbody id="cl_tbody"></tbody>
         </table>
       </div>
     </div>
@@ -2131,9 +2384,58 @@ input,select,textarea,button{
 </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════════
+<!-- ═══════════════════════════════════════════════════════
+     PAGE: MINAS
+═══════════════════════════════════════════════════════ -->
+<div class="page" id="page-minas">
+<div class="container">
+  <div class="section-header">
+    <div class="section-icon">⛏️</div>
+    <div class="section-title"><h1>MINAS & CANTERAS</h1><p>Directorio de minas y proveedores de material — Florida</p></div>
+    <div style="margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <input type="text" class="search-input" id="minas_search" placeholder="Buscar mina, ciudad..." oninput="renderMinas()" style="width:200px"/>
+      <select id="minas_filter" onchange="renderMinas()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:2px;font-family:'IBM Plex Mono',monospace;font-size:0.72rem;outline:none">
+        <option value="">— Todos los materiales —</option>
+        <option value="Dirt">Dirt / Fill</option>
+        <option value="Aggregate">Aggregate</option>
+        <option value="Gravel">Gravel</option>
+        <option value="Sand">Sand</option>
+        <option value="Limestone">Limestone</option>
+        <option value="Rock">Rock / Stone</option>
+      </select>
+      <button class="btn btn-success-outline btn-sm" onclick="printPage('minas')">🖨 Imprimir</button>
+    </div>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card" style="border-left-color:var(--accent)"><div class="stat-label">Total Minas</div><div class="stat-value" id="mn_statTotal" style="color:var(--accent)">0</div><div class="stat-sub">En directorio</div></div>
+    <div class="stat-card" style="border-left-color:var(--success)"><div class="stat-label">Palm Beach Co.</div><div class="stat-value" id="mn_statPB" style="color:var(--success)">0</div><div class="stat-sub">Condado Palm Beach</div></div>
+    <div class="stat-card" style="border-left-color:var(--info)"><div class="stat-label">Miami-Dade</div><div class="stat-value" id="mn_statMD" style="color:var(--info)">0</div><div class="stat-sub">Condado Miami-Dade</div></div>
+    <div class="stat-card" style="border-left-color:var(--purple)"><div class="stat-label">Otros Condados</div><div class="stat-value" id="mn_statOther" style="color:var(--purple)">0</div><div class="stat-sub">Broward, Martin, etc.</div></div>
+  </div>
+
+  <div class="card">
+    <div class="table-toolbar">
+      <div class="accent-dot" style="width:7px;height:7px;border-radius:50%;background:var(--accent)"></div>
+      <h3>DIRECTORIO DE MINAS — FLORIDA</h3>
+      <span class="count-badge" id="mn_countBadge">0</span>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>#</th><th>Nombre / Empresa</th><th>Dirección</th><th>Ciudad</th>
+          <th>Condado</th><th>Material(es)</th><th>Teléfono</th><th>Horario</th><th>Notas</th>
+        </tr></thead>
+        <tbody id="mn_tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════
      PAGE: SETTINGS
-═══════════════════════════════════════════════════ -->
+═══════════════════════════════════════════ -->
 <div class="page" id="page-settings">
 <div class="container">
 
@@ -2726,8 +3028,10 @@ function sbLog(msg) {
 // ════════════════════════════════════════════════
 const DB = {
   tickets:   JSON.parse(localStorage.getItem('dt_tickets')   || '[]'),
+  facturas:  JSON.parse(localStorage.getItem('dt_facturas')  || '[]'),
   trucks:    JSON.parse(localStorage.getItem('dt_trucks')    || '[]'),
   drivers:   JSON.parse(localStorage.getItem('dt_drivers')   || '[]'),
+  clientes:  JSON.parse(localStorage.getItem('dt_clientes')  || '[]'),
   companies: JSON.parse(localStorage.getItem('dt_companies') || '[]'),
   brokers:   JSON.parse(localStorage.getItem('dt_brokers')   || '[]'),
   users:     JSON.parse(localStorage.getItem('dt_users')     || '[]'),
@@ -2756,7 +3060,11 @@ function showPage(page, el) {
   document.getElementById('page-' + page).classList.add('active');
   currentPage = page;
   if (page === 'tickets') {
-    document.querySelector('.nav-btn').classList.add('active');
+    document.getElementById('ticketsBtn').classList.add('active');
+    renderTickets();
+  } else if (page === 'facturas') {
+    document.getElementById('ticketsBtn').classList.add('active');
+    renderFacturas();
   } else if (page === 'earnings') {
     document.getElementById('earningsNavBtn').classList.add('active');
     renderEarnings();
@@ -2775,6 +3083,9 @@ function showPage(page, el) {
   } else if (page === 'brokerreport') {
     document.getElementById('reportsBtn').classList.add('active');
     renderBrokerReport();
+  } else if (page === 'minas') {
+    document.getElementById('reportsBtn').classList.add('active');
+    renderMinas();
   } else if (page === 'settings') {
     document.getElementById('settingsNavBtn').classList.add('active');
     renderSettings();
@@ -2935,6 +3246,45 @@ function populateSelects() {
     drTruck.appendChild(o);
   });
   drTruck.value = dtv;
+
+  // Facturas — Clientes
+  const ficSel = document.getElementById('fi_cliente');
+  if (ficSel) {
+    const ficv = ficSel.value;
+    ficSel.innerHTML = '<option value="">-- Seleccionar --</option>';
+    DB.clientes.filter(c => c.status === 'active').forEach(c => {
+      const o = document.createElement('option');
+      o.value = c.id; o.textContent = `${c.first} ${c.last}${c.company ? ' — ' + c.company : ''}`;
+      ficSel.appendChild(o);
+    });
+    ficSel.value = ficv;
+  }
+
+  // Facturas — Drivers
+  const fidSel = document.getElementById('fi_driver');
+  if (fidSel) {
+    const fidv = fidSel.value;
+    fidSel.innerHTML = '<option value="">-- Seleccionar --</option>';
+    DB.drivers.filter(d => d.status === 'active').forEach(d => {
+      const o = document.createElement('option');
+      o.value = d.id; o.textContent = `${d.first} ${d.last}`;
+      fidSel.appendChild(o);
+    });
+    fidSel.value = fidv;
+  }
+
+  // Facturas — Brokers
+  const fibSel = document.getElementById('fi_broker');
+  if (fibSel) {
+    const fibv = fibSel.value;
+    fibSel.innerHTML = '<option value="">-- Ninguno --</option>';
+    DB.brokers.filter(b => b.status === 'active').forEach(b => {
+      const o = document.createElement('option');
+      o.value = b.id; o.textContent = b.name;
+      fibSel.appendChild(o);
+    });
+    fibSel.value = fibv;
+  }
 }
 
 // ════════════════════════════════════════════════
@@ -3182,6 +3532,412 @@ function renderTickets() {
   document.getElementById('stNet').textContent      = fmtAmt(tN2);
 }
 
+
+// ════════════════════════════════════════════════
+//  FACTURAS
+// ════════════════════════════════════════════════
+let fi_weekOffset = 0;
+function updateWeekUIFacturas() {
+  const {mon, sun} = getWeekRange(fi_weekOffset);
+  const fiLabel = document.getElementById('fi_weekLabel');
+  const fiTitle = document.getElementById('fi_weekTitle');
+  if (fiLabel) fiLabel.textContent = `${fmtD(mon)} — ${fmtD(sun)}, ${mon.getFullYear()}`;
+  if (fiTitle) fiTitle.textContent = `SEMANA ${getWeekNum(mon)}`;
+}
+function changeWeekFacturas(d) { fi_weekOffset += d; updateWeekUIFacturas(); renderFacturas(); }
+function goToCurrentWeekFacturas() { fi_weekOffset = 0; updateWeekUIFacturas(); renderFacturas(); }
+
+let fi_editId = null;
+function nextFacturaNum() {
+  const nums = DB.facturas.map(f => { const m = (f.num||'').match(/(\d+)$/); return m ? parseInt(m[1]) : 0; });
+  return 'F-' + String((nums.length ? Math.max(...nums) : 0) + 1).padStart(3,'0');
+}
+
+function onTruckSelectFactura(sel) { /* no-op kept for compatibility */ }
+
+function toggleDiscountFactura() { /* no-op */ }
+
+function autoCalcFactura() {
+  const rate  = parseFloat(document.getElementById('fi_rate').value)  || 0;
+  const type  = document.getElementById('fi_rateType').value;
+  const loads = parseFloat(document.getElementById('fi_loads').value) || 0;
+  const tons  = parseFloat(document.getElementById('fi_tons').value)  || 0;
+  let total = 0;
+  if (type === 'ton')  total = rate * tons;
+  else if (type === 'load') total = rate * loads;
+  else if (type === 'flat') total = rate;
+  else if (type === 'hour') total = rate * loads;
+  if (total > 0) {
+    document.getElementById('fi_total').value = total.toFixed(2);
+    autoCalcNetFactura();
+  }
+}
+
+function autoCalcNetFactura() {
+  const total = parseFloat(document.getElementById('fi_total').value) || 0;
+  document.getElementById('fi_net').value = total.toFixed(2);
+}
+
+function saveFactura() {
+  const num  = document.getElementById('fi_num').value.trim();
+  const date = document.getElementById('fi_date').value;
+  if (!num || !date) { toast('⚠ No. Factura y Fecha son requeridos', true); return; }
+
+  const clienteId = document.getElementById('fi_cliente').value;
+  const driverId  = document.getElementById('fi_driver').value;
+  const cliente   = DB.clientes.find(c => c.id === clienteId);
+  const driver    = DB.drivers.find(d => d.id === driverId);
+
+  const record = {
+    id: fi_editId || uid(), num, date,
+    clienteId, clienteName: cliente ? `${cliente.first} ${cliente.last}` : '',
+    driverId, driverName: driver ? `${driver.first} ${driver.last}` : '',
+    brokerId: document.getElementById('fi_broker').value,
+    brokerName: (DB.brokers.find(b => b.id === document.getElementById('fi_broker').value)||{}).name || '',
+    from: document.getElementById('fi_from').value.trim(),
+    to:   document.getElementById('fi_to').value.trim(),
+    material: document.getElementById('fi_material').value,
+    loads:   document.getElementById('fi_loads').value,
+    tons:    document.getElementById('fi_tons').value,
+    rate:    document.getElementById('fi_rate').value,
+    rateType:document.getElementById('fi_rateType').value,
+    total:   document.getElementById('fi_total').value,
+    net:     document.getElementById('fi_net').value,
+    notes:   document.getElementById('fi_notes').value.trim(),
+  };
+
+  if (fi_editId) {
+    const i = DB.facturas.findIndex(x => x.id === fi_editId);
+    if (i >= 0) DB.facturas[i] = record;
+    toast('✓ Factura actualizada'); cancelFacturaEdit();
+  } else {
+    DB.facturas.push(record);
+    toast('✓ Factura guardada: ' + num); clearFacturaForm();
+  }
+  save('facturas'); renderAll();
+}
+
+function clearFacturaForm() {
+  ['fi_num','fi_from','fi_to','fi_loads','fi_tons','fi_rate','fi_total','fi_net','fi_notes'].forEach(id => {
+    const el = document.getElementById(id); if(el) el.value = '';
+  });
+  document.getElementById('fi_cliente').value = '';
+  document.getElementById('fi_driver').value = '';
+  document.getElementById('fi_broker').value = '';
+  document.getElementById('fi_material').value = '';
+  document.getElementById('fi_rateType').value = 'ton';
+  document.getElementById('fi_date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('fi_num').value = nextFacturaNum();
+}
+
+function cancelFacturaEdit() {
+  fi_editId = null;
+  document.getElementById('facturaFormTitle').textContent = 'NUEVA FACTURA';
+  document.getElementById('fi_submitBtn').textContent = 'GUARDAR FACTURA';
+  document.getElementById('fi_submitBtn').classList.remove('edit-mode');
+  document.getElementById('fi_cancelBtn').style.display = 'none';
+  clearFacturaForm();
+}
+
+function editFactura(id) {
+  const f = DB.facturas.find(x => x.id === id); if (!f) return;
+  fi_editId = id;
+  document.getElementById('fi_num').value    = f.num;
+  document.getElementById('fi_date').value   = f.date;
+  document.getElementById('fi_cliente').value = f.clienteId || '';
+  document.getElementById('fi_driver').value  = f.driverId  || '';
+  document.getElementById('fi_broker').value = f.brokerId || '';
+  document.getElementById('fi_from').value   = f.from || '';
+  document.getElementById('fi_to').value     = f.to   || '';
+  document.getElementById('fi_material').value = f.material || '';
+  document.getElementById('fi_loads').value    = f.loads    || '';
+  document.getElementById('fi_tons').value     = f.tons     || '';
+  document.getElementById('fi_rate').value     = f.rate     || '';
+  document.getElementById('fi_rateType').value = f.rateType || 'ton';
+  document.getElementById('fi_total').value    = f.total    || '';
+  document.getElementById('fi_net').value = f.net || f.total || '';
+  document.getElementById('fi_notes').value = f.notes || '';
+  document.getElementById('facturaFormTitle').textContent = 'EDITAR FACTURA';
+  document.getElementById('fi_submitBtn').textContent = 'ACTUALIZAR';
+  document.getElementById('fi_submitBtn').classList.add('edit-mode');
+  document.getElementById('fi_cancelBtn').style.display = 'block';
+  document.querySelector('#page-facturas .form-card').scrollIntoView({behavior:'smooth'});
+}
+
+function renderFacturas() {
+  const q = (document.getElementById('fi_search').value||'').toLowerCase();
+  const wf = DB.facturas.filter(f => isInWeek(f.date, fi_weekOffset));
+  const filtered = wf.filter(f => !q ||
+    (f.num||'').toLowerCase().includes(q) ||
+    (f.clienteName||'').toLowerCase().includes(q) ||
+    (f.driverName||'').toLowerCase().includes(q) ||
+    (f.brokerName||'').toLowerCase().includes(q) ||
+    (f.from||'').toLowerCase().includes(q) ||
+    (f.to||'').toLowerCase().includes(q) ||
+    (f.material||'').toLowerCase().includes(q)
+  ).sort((a,b) => a.date.localeCompare(b.date) || a.num.localeCompare(b.num));
+
+  document.getElementById('fi_countBadge').textContent = filtered.length;
+
+  const tbody = document.getElementById('fi_tbody');
+  if (!filtered.length) {
+    tbody.innerHTML = `<tr><td colspan="10"><div class="empty-state"><div class="icon">🧾</div><p>Sin facturas esta semana</p></div></td></tr>`;
+    document.getElementById('fi_tfoot').innerHTML = '';
+  } else {
+    tbody.innerHTML = filtered.map(f => {
+      const netVal  = parseFloat(f.net  || f.total) || 0;
+      const totVal  = parseFloat(f.total) || 0;
+      return `<tr>
+        <td><span class="mono" style="color:var(--teal)">${f.num}</span></td>
+        <td><span class="mono muted" style="font-size:0.72rem">${fmtDate(f.date)}</span></td>
+        <td>
+          <div style="font-size:0.82rem">${f.clienteName || '—'}</div>
+          <div style="font-size:0.68rem;color:var(--muted);font-family:'IBM Plex Mono',monospace">${f.driverName || ''}</div>
+        </td>
+        <td style="font-size:0.78rem;color:var(--label)">${f.brokerName || '—'}</td>
+        <td>${matBadge(f.material)}</td>
+        <td class="mono" style="text-align:right">${f.loads||'—'}</td>
+        <td class="mono" style="text-align:right;font-size:0.8rem">${f.rate ? fmtAmt(f.rate) : '—'}<div style="font-size:0.6rem;color:var(--muted)">${f.rateType||''}</div></td>
+        <td class="mono" style="color:var(--success);text-align:right">${fmtAmt(totVal)}</td>
+        <td class="mono" style="color:var(--teal);font-weight:700;text-align:right;font-size:0.95rem">${fmtAmt(netVal)}</td>
+        <td><div class="actions">
+          <button class="btn-icon btn-edit" onclick="editFactura('${f.id}')">✏</button>
+          <button class="btn-icon btn-del" onclick="openDeleteModal('${f.id}','facturas')">🗑</button>
+        </div></td>
+      </tr>`;
+    }).join('');
+
+    const tL = filtered.reduce((s,f) => s + (parseFloat(f.loads)||0), 0);
+    const tA = filtered.reduce((s,f) => s + (parseFloat(f.total)||0), 0);
+    const tN = filtered.reduce((s,f) => s + (parseFloat(f.net||f.total)||0), 0);
+    document.getElementById('fi_tfoot').innerHTML = `<tr class="totals-row">
+      <td colspan="5" style="text-align:right;font-size:0.65rem;letter-spacing:2px">TOTALES</td>
+      <td style="text-align:right">${tL}</td>
+      <td></td>
+      <td style="text-align:right;color:var(--success)">${fmtAmt(tA)}</td>
+      <td style="text-align:right;color:var(--teal);font-weight:700">${fmtAmt(tN)}</td>
+      <td></td>
+    </tr>`;
+  }
+
+  // Stats
+  const tL2 = wf.reduce((s,f) => s + (parseFloat(f.loads)||0), 0);
+  const tA2 = wf.reduce((s,f) => s + (parseFloat(f.total)||0), 0);
+  const tN2 = wf.reduce((s,f) => s + (parseFloat(f.net||f.total)||0), 0);
+  document.getElementById('fi_stTickets').textContent = wf.length;
+  document.getElementById('fi_stLoads').textContent   = tL2;
+  document.getElementById('fi_stTotal').textContent   = fmtAmt(tA2);
+  document.getElementById('fi_stDiscount').textContent = '$0.00';
+  document.getElementById('fi_stNet').textContent      = fmtAmt(tN2);
+}
+
+function exportCSVFacturas() {
+  const wf = DB.facturas.filter(f => isInWeek(f.date, fi_weekOffset));
+  if (!wf.length) { toast('Sin facturas para exportar', true); return; }
+  const hd = ['Factura','Fecha','Cliente','Truck','Broker','Desde','Hasta','Material','Loads','Tons','Rate','Rate Type','Total','Net'];
+  const rows = wf.map(f => [f.num,f.date,f.clienteName,f.truckNum,f.brokerName,f.from,f.to,f.material,f.loads,f.tons,f.rate,f.rateType,f.total,f.net].map(v => `"${(v||'').toString().replace(/"/g,'""')}"`).join(','));
+  const csv = [hd.join(','),...rows].join('\n');
+  const {mon, sun} = getWeekRange(fi_weekOffset);
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download = `facturas_${mon.toISOString().split('T')[0]}_${sun.toISOString().split('T')[0]}.csv`;
+  a.click();
+  toast('✓ CSV exportado');
+}
+
+// ════════════════════════════════════════════════
+//  CLIENTES
+// ════════════════════════════════════════════════
+let cl_editId = null;
+function saveCliente() {
+  const first = document.getElementById('cl_first').value.trim();
+  const last  = document.getElementById('cl_last').value.trim();
+  if (!first || !last) { toast('⚠ Nombre y Apellido son requeridos', true); return; }
+  const rec = {
+    id: cl_editId || uid(),
+    first, last,
+    company: document.getElementById('cl_company').value.trim(),
+    phone: document.getElementById('cl_phone').value.trim(),
+    email: document.getElementById('cl_email').value.trim(),
+    address: document.getElementById('cl_address').value.trim(),
+    city: document.getElementById('cl_city').value.trim(),
+    state: document.getElementById('cl_state').value,
+    taxid: document.getElementById('cl_taxid').value.trim(),
+    payTerms: document.getElementById('cl_payTerms').value,
+    status: document.getElementById('cl_status').value,
+    notes: document.getElementById('cl_notes').value.trim(),
+  };
+  if (cl_editId) {
+    const i = DB.clientes.findIndex(x => x.id === cl_editId);
+    if (i >= 0) DB.clientes[i] = rec;
+    toast('✓ Cliente actualizado'); cancelClienteEdit();
+  } else {
+    DB.clientes.push(rec);
+    toast('✓ Cliente guardado: ' + first + ' ' + last); clearClienteForm();
+  }
+  save('clientes'); renderAll();
+}
+function clearClienteForm() {
+  ['cl_first','cl_last','cl_company','cl_phone','cl_email','cl_address','cl_city','cl_taxid','cl_notes'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('cl_state').value = 'FL';
+  document.getElementById('cl_payTerms').value = 'net30';
+  document.getElementById('cl_status').value = 'active';
+}
+function cancelClienteEdit() {
+  cl_editId = null;
+  document.getElementById('clienteFormTitle').textContent = 'NUEVO CLIENTE';
+  document.getElementById('cl_submitBtn').textContent = 'GUARDAR CLIENTE';
+  document.getElementById('cl_submitBtn').classList.remove('edit-mode');
+  document.getElementById('cl_cancelBtn').style.display = 'none';
+  clearClienteForm();
+}
+function editCliente(id) {
+  const c = DB.clientes.find(x => x.id === id); if (!c) return;
+  cl_editId = id;
+  document.getElementById('cl_first').value = c.first;
+  document.getElementById('cl_last').value = c.last;
+  document.getElementById('cl_company').value = c.company || '';
+  document.getElementById('cl_phone').value = c.phone || '';
+  document.getElementById('cl_email').value = c.email || '';
+  document.getElementById('cl_address').value = c.address || '';
+  document.getElementById('cl_city').value = c.city || '';
+  document.getElementById('cl_state').value = c.state || 'FL';
+  document.getElementById('cl_taxid').value = c.taxid || '';
+  document.getElementById('cl_payTerms').value = c.payTerms || 'net30';
+  document.getElementById('cl_status').value = c.status || 'active';
+  document.getElementById('cl_notes').value = c.notes || '';
+  document.getElementById('clienteFormTitle').textContent = 'EDITAR CLIENTE';
+  document.getElementById('cl_submitBtn').textContent = 'ACTUALIZAR';
+  document.getElementById('cl_submitBtn').classList.add('edit-mode');
+  document.getElementById('cl_cancelBtn').style.display = 'block';
+  document.querySelector('#page-clientes .card').scrollIntoView({behavior:'smooth'});
+}
+function renderClientes() {
+  const q = (document.getElementById('cl_search').value||'').toLowerCase();
+  const list = DB.clientes.filter(c => !q ||
+    `${c.first} ${c.last}`.toLowerCase().includes(q) ||
+    (c.company||'').toLowerCase().includes(q) ||
+    (c.phone||'').includes(q) ||
+    (c.email||'').toLowerCase().includes(q)
+  );
+  document.getElementById('cl_countBadge').textContent = list.length;
+  document.getElementById('cl_statTotal').textContent = DB.clientes.length;
+  document.getElementById('cl_statActive').textContent = DB.clientes.filter(c => c.status === 'active').length;
+  document.getElementById('cl_statCompanies').textContent = DB.clientes.filter(c => c.company).length;
+  document.getElementById('cl_statInactive').textContent = DB.clientes.filter(c => c.status !== 'active').length;
+
+  const payLabels = {immediate:'Inmediato',net15:'Net 15',net30:'Net 30',net45:'Net 45',net60:'Net 60'};
+  const clStatusBadge = s => {
+    const map = {active:`<span class="badge badge-green">Activo</span>`,inactive:`<span class="badge badge-red">Inactivo</span>`,prospect:`<span class="badge badge-blue">Prospecto</span>`};
+    return map[s] || `<span class="badge">${s}</span>`;
+  };
+  document.getElementById('cl_tbody').innerHTML = !list.length
+    ? `<tr><td colspan="8"><div class="empty-state"><div class="icon">👥</div><p>Sin clientes registrados</p></div></td></tr>`
+    : list.map(c => `<tr>
+        <td>
+          <div style="font-weight:600">${c.first} ${c.last}</div>
+          <div style="font-size:0.68rem;color:var(--muted)">${c.email||''}</div>
+        </td>
+        <td style="font-size:0.78rem">${c.company||'—'}</td>
+        <td class="mono" style="font-size:0.78rem">${c.phone||'—'}</td>
+        <td style="font-size:0.75rem;color:var(--muted)">${c.email||'—'}</td>
+        <td style="font-size:0.78rem">${c.city||'—'}</td>
+        <td class="mono" style="font-size:0.72rem">${payLabels[c.payTerms]||c.payTerms||'—'}</td>
+        <td>${clStatusBadge(c.status)}</td>
+        <td><div class="actions">
+          <button class="btn-icon btn-edit" onclick="editCliente('${c.id}')">✏</button>
+          <button class="btn-icon btn-del" onclick="openDeleteModal('${c.id}','clientes')">🗑</button>
+        </div></td>
+      </tr>`).join('');
+}
+
+// ════════════════════════════════════════════════
+//  MINAS — DIRECTORIO FLORIDA
+// ════════════════════════════════════════════════
+const MINAS_FL = [
+  // ── PALM BEACH COUNTY ──
+  { nombre:'Palm Beach Aggregates', direccion:'8655 Southern Blvd', ciudad:'West Palm Beach', condado:'Palm Beach', zip:'33411', tel:'(561) 793-8550', materiales:['Aggregate','Gravel','Limestone'], horario:'Lun–Vie 7am–5pm, Sáb 7am–12pm', notas:'Proveedor principal de aggregate y limestone en Palm Beach Co.' },
+  { nombre:'Ranger Construction Industries', direccion:'4401 Haverhill Rd N', ciudad:'West Palm Beach', condado:'Palm Beach', zip:'33417', tel:'(561) 689-6400', materiales:['Aggregate','Asphalt','Limestone'], horario:'Lun–Vie 6am–5pm', notas:'Cantera y planta de asfalto, materiales certificados DOT' },
+  { nombre:'Martin Marietta Materials', direccion:'13001 Indian Mound Rd', ciudad:'Wellington', condado:'Palm Beach', zip:'33449', tel:'(561) 798-4800', materiales:['Aggregate','Gravel','Sand','Limestone'], horario:'Lun–Vie 7am–5pm', notas:'Operaciones de cantera activa, materiales de alta calidad' },
+  { nombre:'Vulcan Materials – Loxahatchee', direccion:'17905 Southern Blvd', ciudad:'Loxahatchee', condado:'Palm Beach', zip:'33470', tel:'(561) 793-2105', materiales:['Aggregate','Limestone','Gravel'], horario:'Lun–Vie 6:30am–5pm, Sáb 7am–12pm', notas:'Cantera activa, escala en sitio, cuenta empresarial disponible' },
+  { nombre:'Tarmac America LLC – Boynton', direccion:'6951 Congress Ave', ciudad:'Boynton Beach', condado:'Palm Beach', zip:'33426', tel:'(561) 737-4666', materiales:['Aggregate','Limestone','Sand'], horario:'Lun–Vie 7am–4:30pm', notas:'Mezcla de materiales, entregas programadas disponibles' },
+  { nombre:'APAC – Atlantic', direccion:'1000 S Military Trl', ciudad:'West Palm Beach', condado:'Palm Beach', zip:'33415', tel:'(561) 642-8900', materiales:['Aggregate','Asphalt','Gravel'], horario:'Lun–Vie 6am–5pm', notas:'Planta de agregados y asfalto, proyectos DOT' },
+  { nombre:'Palm Beach Rock & Sand', direccion:'5300 45th St', ciudad:'West Palm Beach', condado:'Palm Beach', zip:'33407', tel:'(561) 683-4440', materiales:['Sand','Gravel','Fill','Dirt'], horario:'Lun–Sáb 7am–4pm', notas:'Proveedor local de arena y gravel, precios competitivos' },
+  { nombre:'Loxahatchee River District Fill Site', direccion:'2500 Jupiter Park Dr', ciudad:'Jupiter', condado:'Palm Beach', zip:'33458', tel:'(561) 747-5700', materiales:['Dirt','Fill'], horario:'Lun–Vie 7am–3:30pm', notas:'Fill limpio certificado, requiere cita previa' },
+  { nombre:'Okeechobee Sand & Rock', direccion:'2900 Okeechobee Blvd', ciudad:'West Palm Beach', condado:'Palm Beach', zip:'33409', tel:'(561) 640-7878', materiales:['Sand','Gravel','Rock'], horario:'Lun–Sáb 6am–5pm', notas:'Arena lavada, gravel para construcción y paisajismo' },
+  { nombre:'Preferred Materials – Delray', direccion:'14205 Military Trl', ciudad:'Delray Beach', condado:'Palm Beach', zip:'33484', tel:'(561) 498-1177', materiales:['Aggregate','Limestone','Asphalt'], horario:'Lun–Vie 7am–5pm', notas:'Materiales certificados FDOT, escala certificada' },
+  // ── MIAMI-DADE COUNTY ──
+  { nombre:'Vulcan Materials – Medley', direccion:'8400 NW 25th St', ciudad:'Medley', condado:'Miami-Dade', zip:'33122', tel:'(305) 885-8888', materiales:['Aggregate','Limestone','Gravel'], horario:'Lun–Vie 6am–5:30pm, Sáb 7am–12pm', notas:'Operación de gran escala, múltiples líneas de carga' },
+  { nombre:'CEMEX Construction Materials – Homestead', direccion:'34800 SW 196th Ave', ciudad:'Homestead', condado:'Miami-Dade', zip:'33034', tel:'(305) 247-3733', materiales:['Aggregate','Limestone','Sand'], horario:'Lun–Vie 7am–4pm', notas:'Cantera de piedra caliza activa, entregas disponibles' },
+  { nombre:'Florida Crystals – Okeelanta', direccion:'11000 US-27', ciudad:'South Bay', condado:'Miami-Dade', zip:'33493', tel:'(561) 996-9072', materiales:['Sand','Fill','Dirt'], horario:'Lun–Vie 7am–4pm', notas:'Arena de calidad para construcción, fill limpio' },
+  { nombre:'Tarmac America – Medley Quarry', direccion:'10600 NW 138th St', ciudad:'Medley', condado:'Miami-Dade', zip:'33018', tel:'(305) 556-0700', materiales:['Limestone','Aggregate','Gravel'], horario:'Lun–Vie 6:30am–5pm', notas:'Piedra caliza certificada, múltiples granulometrías' },
+  { nombre:'Miami Quarry – Krome Ave', direccion:'28600 SW 162nd Ave', ciudad:'Miami', condado:'Miami-Dade', zip:'33030', tel:'(305) 247-1551', materiales:['Limestone','Rock','Gravel'], horario:'Lun–Sáb 6am–5pm', notas:'Cantera histórica, piedra caliza de alta resistencia' },
+  // ── BROWARD COUNTY ──
+  { nombre:'Martin Marietta – Deerfield Beach', direccion:'600 S Powerline Rd', ciudad:'Deerfield Beach', condado:'Broward', zip:'33442', tel:'(954) 420-7600', materiales:['Aggregate','Limestone','Sand'], horario:'Lun–Vie 7am–5pm', notas:'Planta de procesamiento, entrega a proyectos del área' },
+  { nombre:'Ranger Construction – Pompano', direccion:'3701 N Dixie Hwy', ciudad:'Pompano Beach', condado:'Broward', zip:'33064', tel:'(954) 943-5100', materiales:['Aggregate','Asphalt','Limestone'], horario:'Lun–Vie 6am–4:30pm', notas:'Planta de asfalto con cantera integrada' },
+  { nombre:'CEMEX – Miramar Plant', direccion:'10601 Pembroke Rd', ciudad:'Miramar', condado:'Broward', zip:'33025', tel:'(954) 431-4700', materiales:['Sand','Gravel','Aggregate'], horario:'Lun–Vie 7am–4pm', notas:'Arena y grava para construcción residencial y comercial' },
+  // ── MARTIN COUNTY ──
+  { nombre:'Martin County Aggregate & Stone', direccion:'2401 SE Monterey Rd', ciudad:'Stuart', condado:'Martin', zip:'34994', tel:'(772) 287-5693', materiales:['Aggregate','Limestone','Gravel'], horario:'Lun–Vie 7am–4:30pm', notas:'Proveedor regional, precios de condado disponibles' },
+  { nombre:'Vulcan Materials – Port St Lucie', direccion:'1750 NW Courtyard Cir', ciudad:'Port St Lucie', condado:'St Lucie', zip:'34986', tel:'(772) 336-6200', materiales:['Aggregate','Limestone','Gravel','Sand'], horario:'Lun–Vie 6:30am–5pm', notas:'Cantera activa, escala en sitio certificada' },
+  // ── HENDRY / COLLIER ──
+  { nombre:'Vulcan Materials – Immokalee', direccion:'1600 Lake Trafford Rd', ciudad:'Immokalee', condado:'Collier', zip:'34142', tel:'(239) 657-3661', materiales:['Limestone','Aggregate','Rock'], horario:'Lun–Vie 7am–4pm', notas:'Operación en el sur de FL, piedra caliza y aggregate' },
+  { nombre:'Hendry County Rock – LaBelle', direccion:'425 Cowboy Way', ciudad:'LaBelle', condado:'Hendry', zip:'33935', tel:'(863) 675-3000', materiales:['Limestone','Gravel','Fill'], horario:'Lun–Vie 7am–4pm', notas:'Roca y grava para proyectos agrícolas e industriales' },
+  // ── OKEECHOBEE ──
+  { nombre:'Okeechobee Quarry LLC', direccion:'7601 US-441 N', ciudad:'Okeechobee', condado:'Okeechobee', zip:'34972', tel:'(863) 357-0000', materiales:['Limestone','Rock','Gravel'], horario:'Lun–Vie 6am–5pm', notas:'Cantera regional, materiales para el área del lago Okeechobee' },
+];
+
+function renderMinas() {
+  const q = (document.getElementById('minas_search')?.value||'').toLowerCase();
+  const f = document.getElementById('minas_filter')?.value || '';
+  let list = MINAS_FL;
+  if (q) list = list.filter(m =>
+    m.nombre.toLowerCase().includes(q) ||
+    m.ciudad.toLowerCase().includes(q) ||
+    m.condado.toLowerCase().includes(q) ||
+    m.direccion.toLowerCase().includes(q) ||
+    m.materiales.some(mat => mat.toLowerCase().includes(q)) ||
+    (m.notas||'').toLowerCase().includes(q)
+  );
+  if (f) list = list.filter(m => m.materiales.some(mat => mat.toLowerCase().includes(f.toLowerCase())));
+
+  const el = n => document.getElementById(n);
+  if(el('mn_statTotal')) el('mn_statTotal').textContent = list.length;
+  if(el('mn_statPB'))    el('mn_statPB').textContent    = list.filter(m=>m.condado==='Palm Beach').length;
+  if(el('mn_statMD'))    el('mn_statMD').textContent    = list.filter(m=>m.condado==='Miami-Dade').length;
+  if(el('mn_statOther')) el('mn_statOther').textContent = list.filter(m=>!['Palm Beach','Miami-Dade'].includes(m.condado)).length;
+  if(el('mn_countBadge')) el('mn_countBadge').textContent = list.length;
+
+  const MAT_COL = {Aggregate:'var(--accent)',Limestone:'var(--info)',Gravel:'var(--success)',Sand:'var(--teal)',Dirt:'#a0714f',Fill:'#7aaa7a',Rock:'var(--purple)',Asphalt:'var(--muted)'};
+  const CONDADO_COL = {'Palm Beach':'var(--success)','Miami-Dade':'var(--info)',Broward:'var(--purple)',Martin:'var(--accent)','St Lucie':'var(--accent)',Collier:'var(--teal)',Hendry:'var(--teal)',Okeechobee:'var(--accent)'};
+
+  const tbody = document.getElementById('mn_tbody');
+  if (!tbody) return;
+  if (!list.length) {
+    tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state"><div class="icon">⛏️</div><p>Sin resultados para la búsqueda</p></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = list.map((m, i) => {
+    const matBadges = m.materiales.map(mat => {
+      const c = MAT_COL[mat]||'var(--muted)';
+      return `<span style="display:inline-block;margin:1px 2px;padding:1px 7px;border-radius:2px;font-family:'IBM Plex Mono',monospace;font-size:0.6rem;font-weight:600;text-transform:uppercase;letter-spacing:1px;background:${c}22;color:${c};border:1px solid ${c}44">${mat}</span>`;
+    }).join('');
+    const condCol = CONDADO_COL[m.condado]||'var(--muted)';
+    return `<tr>
+      <td class="mono muted" style="font-size:0.72rem">${i+1}</td>
+      <td>
+        <div style="font-weight:600;font-size:0.88rem">${m.nombre}</div>
+        ${m.zip ? `<div class="mono" style="font-size:0.65rem;color:var(--muted)">ZIP: ${m.zip}</div>` : ''}
+      </td>
+      <td style="font-size:0.78rem;color:var(--label)">${m.direccion}</td>
+      <td style="font-size:0.82rem;font-weight:600">${m.ciudad}</td>
+      <td><span style="padding:2px 8px;border-radius:2px;background:${condCol}18;color:${condCol};border:1px solid ${condCol}40;font-family:'IBM Plex Mono',monospace;font-size:0.65rem;font-weight:600;white-space:nowrap">${m.condado}</span></td>
+      <td>${matBadges}</td>
+      <td class="mono" style="font-size:0.75rem;white-space:nowrap">${m.tel||'—'}</td>
+      <td style="font-size:0.72rem;color:var(--muted);font-family:'IBM Plex Mono',monospace;white-space:nowrap">${m.horario||'—'}</td>
+      <td style="font-size:0.72rem;color:var(--muted);max-width:180px">${m.notas||'—'}</td>
+    </tr>`;
+  }).join('');
+}
 
 // ════════════════════════════════════════════════
 //  TRUCKS
@@ -5594,6 +6350,7 @@ function updateMenuBadges() {
   document.getElementById('truckMenuBadge').textContent  = DB.trucks.length;
   document.getElementById('driverMenuBadge').textContent = DB.drivers.length;
   document.getElementById('brokerMenuBadge').textContent = DB.brokers.length;
+  document.getElementById('clienteMenuBadge').textContent = DB.clientes.length;
   updateAlertDot();
 }
 
@@ -5622,8 +6379,10 @@ function renderAll() {
   populateExpenseTrucks();
   populateAIBrokers();
   renderTickets();
+  renderFacturas();
   renderTrucks();
   renderDrivers();
+  renderClientes();
   renderBrokers();
   renderExpenses();
   updateMenuBadges();
@@ -5638,11 +6397,14 @@ function renderAll() {
 // ════════════════════════════════════════════════
 updateWeekUI();
 updateWeekE();
+updateWeekUIFacturas();
 clUpdateWeekUI();
 document.getElementById('t_date').value = new Date().toISOString().split('T')[0];
+document.getElementById('fi_date').value = new Date().toISOString().split('T')[0];
 document.getElementById('ew_date').value = new Date().toISOString().split('T')[0];
 document.getElementById('exp_date').value = new Date().toISOString().split('T')[0];
 document.getElementById('t_num').value = nextTicketNum();
+document.getElementById('fi_num').value = nextFacturaNum();
 
 // Initialize Supabase client from saved config
 initSupabaseClient();
@@ -5779,6 +6541,7 @@ initSupabaseClient();
 
   var PAGE_LABELS = {
     tickets:'REPORTE DE TICKETS',
+    facturas:'REPORTE DE FACTURAS',
     earnings:'GANANCIAS SEMANALES',
     closing:'CIERRE DE SEMANA',
     expenses:'REGISTRO DE GASTOS',
@@ -5787,6 +6550,8 @@ initSupabaseClient();
     trucks:'REGISTRO DE CAMIONES',
     drivers:'REGISTRO DE CHOFERES',
     brokers:'REGISTRO DE BROKERS',
+    clientes:'REGISTRO DE CLIENTES',
+    minas:'REPORTE DE MINAS — FLORIDA',
     alerts:'ALERTAS DE VENCIMIENTO'
   };
 
@@ -5847,7 +6612,7 @@ initSupabaseClient();
 
   // Inject a hidden print-only container in each page that gets filled on print
   function injectPrintContainers(){
-    var pages = ['tickets','earnings','closing','expenses','pl','brokerreport','trucks','drivers','brokers','alerts'];
+    var pages = ['tickets','facturas','earnings','closing','expenses','pl','brokerreport','trucks','drivers','brokers','clientes','minas','alerts'];
     pages.forEach(function(p){
       var pageEl = document.getElementById('page-'+p);
       if(!pageEl) return;
